@@ -1,0 +1,14 @@
+# Internal reference documents: keep out of the public site
+*.pptx
+*.PPTX
+*.ppt
+*.key
+*.pdf
+*.xlsx
+*.XLSX
+*.xls
+*.docx
+*.doc
+
+# OS noise
+.DS_Store

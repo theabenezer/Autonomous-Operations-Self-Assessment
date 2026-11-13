@@ -1,0 +1,1733 @@
+<!--
+  IBM Autonomous Operations Self-Assessment
+  ------------------------------------------------------------------
+  Standalone + embeddable single-file web app.
+  Standalone: open this file in a browser, or host it anywhere (GitHub Pages ready).
+  Embeddable: <iframe src="index.html"></iframe>
+      Append ?embed=1 to hide the hero and footer for a clean inline embed.
+      The page posts its height to the parent (postMessage) for iframe auto-resize.
+  Built with Carbon Design System Web Components (IBM CDN) + IBM Plex.
+
+  Where to edit:
+    STAGES  the four stage names
+    DIMS    the eight rows and their 32 statements, each tagged axis "A" (autonomy) or "G" (controls)
+            and grouped under the framework categories Intelligence, Operations, Action and Control
+    FOUND   the three foundations and which row drives each one
+    DEEP    the three deep dives (Security, Operations, Cost governance), four rows each,
+            with who each is for and the stat shown beside its result.
+            Each one has its own link: index.html#security, #operations, #cost
+    The three placement messages live in placementMessage().
+    Colors, spacing and type are Carbon tokens at the top of the <style> block.
+
+  Answers stay in the client's browser (localStorage). Nothing is sent anywhere.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<title>IBM Autonomous Operations Self-Assessment</title>
+<meta name="description" content="A self-assessment for the agent-ready maturity model. Place your organization across eight dimensions and four stages, then go deeper on security, operations and cost governance." />
+<meta name="theme-color" content="#edf5ff" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="IBM Autonomous Operations Self-Assessment" />
+<meta property="og:description" content="Place your organization on the agent-ready maturity model, then go deeper on security, operations and cost governance." />
+<!-- Inline icon: four rising stage bars. Saves the browser a failed request for favicon.ico -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23edf5ff'/%3E%3Crect x='5' y='20' width='4' height='7' fill='%2378a9ff'/%3E%3Crect x='11' y='16' width='4' height='11' fill='%234589ff'/%3E%3Crect x='17' y='11' width='4' height='16' fill='%230f62fe'/%3E%3Crect x='23' y='5' width='4' height='22' fill='%23002d9c'/%3E%3C/svg%3E" />
+
+<!-- IBM Plex (IBM CDN, per Carbon guidance) -->
+<!-- Open the connection to the IBM CDN early, and fetch the three Plex Sans weights used on first view -->
+<link rel="preconnect" href="https://1.www.s81c.com" />
+<link rel="preconnect" href="https://1.www.s81c.com" crossorigin />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://1.www.s81c.com/common/carbon/plex/fonts/IBM-Plex-Sans/fonts/split/woff2/IBMPlexSans-Regular-Latin1.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://1.www.s81c.com/common/carbon/plex/fonts/IBM-Plex-Sans/fonts/split/woff2/IBMPlexSans-Light-Latin1.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://1.www.s81c.com/common/carbon/plex/fonts/IBM-Plex-Sans/fonts/split/woff2/IBMPlexSans-SemiBold-Latin1.woff2" />
+<link rel="stylesheet" href="https://1.www.s81c.com/common/carbon/plex/sans.css" />
+<!-- Plex Mono only styles small labels, so it loads without holding up the first paint -->
+<link rel="stylesheet" href="https://1.www.s81c.com/common/carbon/plex/mono.css" media="print" onload="this.media='all'" />
+<noscript><link rel="stylesheet" href="https://1.www.s81c.com/common/carbon/plex/mono.css" /></noscript>
+
+<!-- Carbon Web Components (IBM CDN, v2.60.0) -->
+<script type="module" src="https://1.www.s81c.com/common/carbon/web-components/version/v2.60.0/button.min.js"></script>
+<script type="module" src="https://1.www.s81c.com/common/carbon/web-components/version/v2.60.0/tag.min.js"></script>
+<script type="module" src="https://1.www.s81c.com/common/carbon/web-components/version/v2.60.0/notification.min.js"></script>
+<script type="module" src="https://1.www.s81c.com/common/carbon/web-components/version/v2.60.0/progress-bar.min.js"></script>
+<script type="module" src="https://1.www.s81c.com/common/carbon/web-components/version/v2.60.0/content-switcher.min.js"></script>
+<script type="module" src="https://1.www.s81c.com/common/carbon/web-components/version/v2.60.0/tabs.min.js"></script>
+
+<style>
+  /* ============================================================
+     Carbon v11 White theme tokens, declared locally so the custom
+     layout is right even before component CSS arrives.
+     ============================================================ */
+  :root {
+    --cds-background: #ffffff;
+    --cds-background-brand: #0f62fe;
+    --cds-layer-01: #f4f4f4;
+    --cds-layer-02: #ffffff;
+    --cds-layer-hover-01: #e8e8e8;
+    --cds-layer-hover-02: #e8e8e8;
+    --cds-layer-selected-01: #e0e0e0;
+    --cds-layer-accent-01: #e0e0e0;
+    --cds-border-subtle-00: #e0e0e0;
+    --cds-border-subtle-01: #c6c6c6;
+    --cds-border-strong-01: #8d8d8d;
+    --cds-border-tile-01: #c6c6c6;
+    --cds-border-inverse: #161616;
+    --cds-border-interactive: #0f62fe;
+    --cds-text-primary: #161616;
+    --cds-text-secondary: #525252;
+    --cds-text-helper: #6f6f6f;
+    --cds-text-placeholder: #a8a8a8;
+    --cds-text-on-color: #ffffff;
+    --cds-link-primary: #0f62fe;
+    --cds-link-primary-hover: #0043ce;
+    --cds-icon-primary: #161616;
+    --cds-icon-secondary: #525252;
+    --cds-interactive: #0f62fe;
+    --cds-focus: #0f62fe;
+    --cds-highlight: #d0e2ff;
+    --cds-support-error: #da1e28;
+    --cds-support-success: #24a148;
+    --cds-support-warning: #f1c21b;
+    --cds-support-info: #0043ce;
+
+    /* IBM palette steps used directly */
+    --blue-10: #edf5ff; --blue-20: #d0e2ff; --blue-40: #78a9ff; --blue-60: #0f62fe; --blue-70: #0043ce; --blue-80: #002d9c;
+    --cyan-50: #1192e8; --cyan-70: #00539a;
+    --purple-70: #6929c4;
+    --green-50: #24a148; --green-10: #defbe6; --green-70: #0e6027;
+    --yellow-30: #f1c21b; --yellow-10: #fcf4d6; --yellow-70: #684e00;
+    --red-60: #da1e28; --red-10: #fff1f1; --red-70: #a2191f;
+    --gray-50: #8d8d8d;
+
+    /* Series colors for the charts: Carbon categorical order, validated for colorblind readers */
+    --series-autonomy: var(--cyan-50);
+    --series-controls: var(--purple-70);
+    /* Value chart layers: Carbon categorical order, validated for colorblind readers */
+    --layer-security: var(--purple-70);
+    --layer-ops: var(--cyan-50);
+    --layer-value: #9f1853;
+
+    /* Spacing scale */
+    --cds-spacing-01: .125rem; --cds-spacing-02: .25rem; --cds-spacing-03: .5rem; --cds-spacing-04: .75rem;
+    --cds-spacing-05: 1rem;    --cds-spacing-06: 1.5rem; --cds-spacing-07: 2rem; --cds-spacing-08: 2.5rem;
+    --cds-spacing-09: 3rem;    --cds-spacing-10: 4rem;
+
+    /* Motion: Carbon duration tokens and easing curves */
+    --duration-fast-01: 70ms; --duration-fast-02: 110ms; --duration-moderate-01: 150ms; --duration-moderate-02: 240ms;
+    --ease-standard: cubic-bezier(.2, 0, .38, .9);
+    --ease-entrance: cubic-bezier(0, 0, .38, .9);
+    --ease-entrance-expressive: cubic-bezier(0, 0, .3, 1);
+
+    --plex: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    --plex-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --shadow-card: 0 1px 2px rgba(0,0,0,.06), 0 2px 12px rgba(0,0,0,.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--plex); color: var(--cds-text-primary); background: var(--cds-background);
+    -webkit-font-smoothing: antialiased; font-size: .875rem; line-height: 1.43; letter-spacing: .16px;
+  }
+  a { color: var(--cds-link-primary); text-decoration: none; }
+  a:hover { color: var(--cds-link-primary-hover); text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--cds-focus); outline-offset: 2px; }
+
+  .wrap { max-width: 1312px; margin: 0 auto; padding: 0 var(--cds-spacing-06); }
+  @media (max-width: 671px) { .wrap { padding: 0 var(--cds-spacing-05); } }
+
+  /* Type styles (Carbon type set) */
+  .label-01 { font-size: .75rem; line-height: 1rem; letter-spacing: .32px; }
+  .helper { color: var(--cds-text-helper); }
+  .eyebrow { font-size: .75rem; line-height: 1rem; letter-spacing: .32px; color: var(--blue-70); font-weight: 600; text-transform: uppercase; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 400; letter-spacing: 0; }
+
+  /* ---------- Fallbacks while Carbon components load, or if the CDN is unreachable ---------- */
+  cds-button:not(:defined) { display: inline-flex; align-items: center; gap: .5rem; min-height: 3rem; padding: 0 1rem; font: inherit; background: var(--blue-60); color: #fff; cursor: pointer; }
+  cds-button:not(:defined)[kind="tertiary"] { background: transparent; color: var(--blue-60); border: 1px solid var(--blue-60); }
+  cds-button:not(:defined)[kind="ghost"] { background: transparent; color: var(--blue-60); }
+  cds-button:not(:defined) svg { display: none; }
+  cds-tag:not(:defined) { display: inline-block; font-size: .75rem; line-height: 1.125rem; padding: 0 .5rem; border-radius: 1rem; background: var(--cds-layer-accent-01); color: var(--cds-text-primary); }
+  cds-inline-notification:not(:defined) { display: block; padding: .75rem 1rem; border-left: 3px solid var(--blue-60); background: var(--blue-10); }
+  /* Hold each component's space while it loads, so nothing jumps when it arrives */
+  cds-progress-bar:not(:defined) { display: block; min-height: 1.875rem; }
+  #progress:not(:defined), #dProgress:not(:defined) { min-height: 3.375rem; }
+  cds-tabs, cds-content-switcher { min-height: 2.5rem; }
+
+  /* ============================================================
+     Hero
+     ============================================================ */
+  .hero { background: var(--blue-10); border-bottom: 1px solid var(--cds-border-subtle-00); }
+  .hero .wrap { padding-top: var(--cds-spacing-05); padding-bottom: var(--cds-spacing-09); }
+  .topbar { display: flex; align-items: center; gap: .875rem; padding: .875rem 0 2.25rem; }
+  .ibm-logo { height: 26px; width: auto; display: block; }
+  .topbar .sep { width: 1px; height: 24px; background: var(--blue-20); }
+  .topbar .kicker { font-size: .875rem; letter-spacing: .02em; color: var(--cds-text-primary); }
+  .crumbs { font-size: .8125rem; color: var(--cds-text-secondary); margin-bottom: var(--cds-spacing-07); }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--cds-spacing-08) var(--cds-spacing-09); align-items: end; }
+  @media (max-width: 1055px) { .hero-grid { grid-template-columns: 1fr; gap: var(--cds-spacing-07); } }
+  .hero .eyebrow { margin-bottom: var(--cds-spacing-05); }
+  .hero h1 {
+    font-weight: 300; font-size: clamp(2rem, 1.4rem + 2.4vw, 3.375rem); line-height: 1.15;
+    margin: 0 0 var(--cds-spacing-05); max-width: 20ch; text-wrap: balance;
+  }
+  .hero .lede { font-size: clamp(1rem, .9rem + .5vw, 1.25rem); font-weight: 300; line-height: 1.5; max-width: 52ch; margin: 0; color: var(--cds-text-secondary); letter-spacing: 0; }
+
+  .legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--blue-20); border: 1px solid var(--blue-20); }
+  .legend > div { background: #fff; padding: var(--cds-spacing-05); min-height: 7rem; border-top: 3px solid var(--blue-40); }
+  .legend > div:nth-child(1) { border-top-color: var(--blue-20); }
+  .legend > div:nth-child(2) { border-top-color: var(--blue-40); }
+  .legend > div:nth-child(3) { border-top-color: var(--blue-60); }
+  .legend > div:nth-child(4) { border-top-color: var(--blue-80); }
+  .legend .n { font-family: var(--plex-mono); font-size: .75rem; color: var(--cds-text-helper); display: block; margin-bottom: .375rem; }
+  .legend b { display: block; font-weight: 600; font-size: .9375rem; margin-bottom: .25rem; }
+  .legend small { display: block; color: var(--cds-text-secondary); font-size: .8125rem; line-height: 1.35; }
+
+  /* ============================================================
+     App layout
+     ============================================================ */
+  .app { padding: var(--cds-spacing-09) 0 var(--cds-spacing-03); }
+  .app .wrap { display: grid; gap: var(--cds-spacing-07); }
+  .panel { background: var(--cds-layer-02); border: 1px solid var(--cds-border-subtle-00); }
+  .panel-h { padding: var(--cds-spacing-05) var(--cds-spacing-06); border-bottom: 1px solid var(--cds-border-subtle-00); display: flex; justify-content: space-between; align-items: center; gap: var(--cds-spacing-06); flex-wrap: wrap; }
+  .panel-h h2 { font-size: 1.25rem; line-height: 1.75rem; }
+  .panel-h p { margin: .25rem 0 0; color: var(--cds-text-secondary); max-width: 64ch; }
+  .panel-h .topbar-progress { flex: 0 1 280px; min-width: 200px; }
+  .panel-h .topbar-progress cds-progress-bar { margin: 0; }
+
+  /* ---------- Matrix: white tiles on a Gray 10 layer ---------- */
+  .matrix { padding: 0 var(--cds-spacing-06) var(--cds-spacing-06); background: var(--cds-layer-01); }
+  .mhead {
+    display: grid; grid-template-columns: 220px repeat(4, minmax(0, 1fr)); gap: var(--cds-spacing-03);
+    padding: var(--cds-spacing-04) 0; position: sticky; top: 0; z-index: 2; background: var(--cds-layer-01);
+    border-bottom: 1px solid var(--cds-border-subtle-01);
+  }
+  .mhead > div { font-size: .75rem; line-height: 1rem; letter-spacing: .32px; color: var(--cds-text-secondary); font-weight: 600; padding-top: .5rem; border-top: 2px solid transparent; }
+  .mhead > div:first-child { font-weight: 400; color: var(--cds-text-helper); }
+  .mhead > div:nth-child(2) { border-top-color: var(--blue-20); }
+  .mhead > div:nth-child(3) { border-top-color: var(--blue-40); }
+  .mhead > div:nth-child(4) { border-top-color: var(--blue-60); }
+  .mhead > div:nth-child(5) { border-top-color: var(--blue-80); }
+  .mhead .stg { display: block; font-family: var(--plex-mono); font-weight: 400; color: var(--cds-text-helper); margin-bottom: .125rem; }
+
+  /* Group headers: one per framework category */
+  .ghead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--cds-spacing-05); padding: var(--cds-spacing-07) 0 var(--cds-spacing-03); border-bottom: 1px solid var(--cds-border-subtle-01); }
+  .ghead .gname { font-weight: 600; font-size: 1rem; line-height: 1.375rem; }
+  .ghead .gsub { color: var(--cds-text-helper); font-size: .75rem; letter-spacing: .32px; margin-left: var(--cds-spacing-03); }
+  .ghead cds-tag { flex: 0 0 auto; }
+
+  .row {
+    display: grid; grid-template-columns: 220px repeat(4, minmax(0, 1fr)); gap: var(--cds-spacing-03);
+    padding: var(--cds-spacing-05) 0;
+  }
+  .dim { padding: .375rem var(--cds-spacing-05) 0 0; }
+  .dim b { display: block; font-weight: 400; font-size: .9375rem; line-height: 1.375rem; color: var(--cds-text-primary); }
+
+  /* Radio tile, styled to the Carbon selectable tile spec, on layer 02 */
+  .tile {
+    position: relative; display: block; min-height: 4.5rem; padding: var(--cds-spacing-05) var(--cds-spacing-07) var(--cds-spacing-05) var(--cds-spacing-05);
+    background: var(--cds-layer-02); border: 1px solid var(--cds-border-subtle-00); color: var(--cds-text-primary);
+    cursor: pointer; font-size: .875rem; line-height: 1.25rem; letter-spacing: .16px;
+    transition: background-color var(--duration-fast-02) var(--ease-standard), border-color var(--duration-fast-02) var(--ease-standard), color var(--duration-fast-02) var(--ease-standard), transform var(--duration-fast-02) var(--ease-standard);
+  }
+  .tile:hover { background: var(--cds-layer-hover-02); }
+  /* Once a row is answered, the other three choices settle into the band */
+  .row.answered .tile:not(.on) { background: transparent; color: var(--cds-text-secondary); border-color: var(--cds-border-subtle-00); }
+  .row.answered .tile:not(.on):hover { background: var(--cds-layer-hover-01); color: var(--cds-text-primary); }
+  .tile input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+  .tile .check { position: absolute; top: var(--cds-spacing-05); right: var(--cds-spacing-05); width: 16px; height: 16px; fill: var(--cds-icon-primary); opacity: 0; transform: scale(.8); transition: opacity var(--duration-fast-02) var(--ease-entrance), transform var(--duration-moderate-01) var(--ease-entrance-expressive); }
+  .tile.on { border-color: var(--cds-border-inverse); }
+  .tile.on .check { opacity: 1; transform: none; }
+  .tile:has(input:focus-visible) { outline: 2px solid var(--cds-focus); outline-offset: -2px; }
+  .tile .stage-mark { display: none; font-family: var(--plex-mono); font-size: .75rem; line-height: 1rem; color: var(--cds-text-helper); margin-bottom: .25rem; }
+  .tile .txt { display: block; }
+
+  @media (max-width: 1055px) {
+    .mhead { display: none; }
+    .row { grid-template-columns: 1fr; gap: var(--cds-spacing-03); }
+    .dim { margin-bottom: var(--cds-spacing-02); padding-top: 0; }
+    .dim b { font-weight: 600; }
+    .tile .stage-mark { display: block; }
+    .ghead { align-items: flex-start; }
+    .ghead .gsub { display: block; margin-left: 0; }
+  }
+  .matrix-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--cds-spacing-05); flex-wrap: wrap; padding: var(--cds-spacing-05) var(--cds-spacing-06); border-top: 1px solid var(--cds-border-subtle-00); min-height: 4.5rem; }
+  .matrix-foot .muted { margin: 0; }
+  .matrix-foot cds-button[hidden] { display: none; }
+  @media (min-width: 672px) and (max-width: 1055px) {
+    .row { grid-template-columns: 1fr 1fr; }
+    .dim { grid-column: 1 / -1; }
+  }
+
+  /* ---------- Results ---------- */
+  .results-body { padding: var(--cds-spacing-06); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--cds-spacing-08) var(--cds-spacing-09); }
+  @media (max-width: 1055px) { .results-body { grid-template-columns: 1fr; gap: var(--cds-spacing-07); } }
+  .results-body h3 { font-size: 1rem; line-height: 1.5rem; font-weight: 600; margin-bottom: var(--cds-spacing-05); }
+  .block + .block { margin-top: var(--cds-spacing-07); }
+  cds-progress-bar { display: block; margin-bottom: var(--cds-spacing-06); }
+
+  .placement .stage { font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.625rem); line-height: 1.2; font-weight: 300; margin: .25rem 0 0; }
+  .placement .stage b { font-weight: 600; }
+  .placement .provisional { color: var(--cds-text-secondary); font-size: 1rem; line-height: 1.5rem; max-width: 44ch; margin-top: .375rem; letter-spacing: 0; }
+  cds-inline-notification { display: block; margin-top: var(--cds-spacing-05); max-inline-size: none; }
+  cds-inline-notification[hidden] { display: none; }
+
+  /* 2x2 plot */
+  .plot-wrap { display: grid; grid-template-columns: auto 1fr; gap: var(--cds-spacing-03); max-width: 400px; margin-top: var(--cds-spacing-06); }
+  .plot-y { writing-mode: vertical-rl; transform: rotate(180deg); font-size: .75rem; letter-spacing: .32px; color: var(--cds-text-secondary); text-align: center; }
+  .plot { position: relative; aspect-ratio: 1; background: var(--cds-layer-01); border: 1px solid var(--cds-border-subtle-01); }
+  .plot svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  /* Four corner labels, each anchored at the top left of its cell in the 3x3 grid */
+  .plot .q { position: absolute; width: 33.333%; height: 33.333%; padding: .625rem .75rem; font-size: .6875rem; line-height: 1.3; letter-spacing: .32px; font-weight: 600; color: var(--cds-text-primary); pointer-events: none; }
+  .plot .q.tl { top: 0; left: 0; }
+  .plot .q.tr { top: 0; left: 66.667%; }
+  .plot .q.bl { top: 66.667%; left: 0; }
+  .plot .q.br { top: 66.667%; left: 66.667%; }
+  .plot-x { grid-column: 2; font-size: .75rem; letter-spacing: .32px; color: var(--cds-text-secondary); text-align: center; }
+  .plot .you { transition: cx .3s cubic-bezier(.2,0,.38,.9), cy .3s cubic-bezier(.2,0,.38,.9); }
+
+  .scores { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--cds-border-subtle-00); border: 1px solid var(--cds-border-subtle-00); margin-top: var(--cds-spacing-06); max-width: 400px; }
+  .score { background: #fff; padding: var(--cds-spacing-05); }
+  .score .k { display: flex; align-items: center; gap: .5rem; font-size: .75rem; letter-spacing: .32px; color: var(--cds-text-secondary); }
+  .score .sw { width: .75rem; height: .75rem; flex: 0 0 auto; }
+  .score .v { font-family: var(--plex-mono); font-size: 1.75rem; line-height: 1.2; font-weight: 400; margin-top: .375rem; font-variant-numeric: tabular-nums; }
+  .score .v small { font-family: var(--plex); font-size: .8125rem; color: var(--cds-text-helper); margin-left: .25rem; }
+  .score .v { white-space: nowrap; }
+  @media (max-width: 671px) { .score .v { font-size: 1.5rem; } }
+  .score .d { font-size: .75rem; color: var(--cds-text-helper); margin-top: .25rem; letter-spacing: .32px; }
+
+  /* Profile bars */
+  .chart-legend { display: flex; flex-wrap: wrap; gap: var(--cds-spacing-05); font-size: .75rem; letter-spacing: .32px; color: var(--cds-text-secondary); margin: -.5rem 0 var(--cds-spacing-05); }
+  .chart-legend span { display: inline-flex; align-items: center; gap: .5rem; }
+  .chart-legend i { width: .75rem; height: .75rem; display: inline-block; }
+  .sw-a, .chart-legend i.a { background: var(--series-autonomy); }
+  .sw-g, .chart-legend i.g { background: var(--series-controls); }
+  .bars { display: grid; gap: var(--cds-spacing-03); }
+  .bar { display: grid; grid-template-columns: 150px 1fr 88px; gap: var(--cds-spacing-04); align-items: center; }
+  .bar .lab { color: var(--cds-text-secondary); font-size: .8125rem; }
+  .bar .track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; height: .875rem; }
+  .bar .track i { display: block; background: var(--cds-layer-accent-01); }
+  .bar .track i.a { background: var(--series-autonomy); }
+  .bar .track i.g { background: var(--series-controls); }
+  .bar .val { font-size: .75rem; letter-spacing: .32px; color: var(--cds-text-helper); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media (max-width: 671px) { .bar { grid-template-columns: 110px 1fr 70px; } }
+
+  /* Foundations */
+  .found { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--cds-spacing-05); }
+  @media (max-width: 671px) { .found { grid-template-columns: 1fr; } }
+  .found > div { border-top: 2px solid var(--cds-border-subtle-01); padding-top: var(--cds-spacing-04); }
+  .found b { display: block; font-weight: 600; font-size: .875rem; }
+  .found small { display: block; font-size: .75rem; letter-spacing: .32px; color: var(--cds-text-helper); margin-top: .125rem; }
+  .status { display: inline-flex; align-items: center; gap: .375rem; font-size: .75rem; letter-spacing: .32px; margin-top: .625rem; color: var(--cds-text-primary); }
+  .status svg { width: 16px; height: 16px; flex: 0 0 auto; }
+  .status.ok svg { fill: var(--green-50); }
+  .status.mid svg { fill: var(--yellow-30); }
+  .status.mid svg .inner { fill: #161616; opacity: 1; }
+  .status.low svg { fill: var(--red-60); }
+  .status.none svg { fill: var(--gray-50); }
+  .status.none { color: var(--cds-text-helper); }
+
+  /* Next stage */
+  .next-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cds-spacing-03); }
+  .next-list li { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--cds-spacing-04); align-items: start; padding: var(--cds-spacing-04) var(--cds-spacing-05); background: var(--cds-layer-01); border-left: 3px solid var(--series-controls); }
+  .next-list li.a { border-left-color: var(--series-autonomy); }
+  .next-list li b { display: block; font-weight: 600; }
+  .next-list li span { display: block; color: var(--cds-text-secondary); margin-top: .125rem; }
+  .next-list cds-tag { margin-top: .125rem; }
+  .muted { color: var(--cds-text-helper); }
+
+  /* How AI value builds: maturity stage up the side, AI value along the bottom, one curve up to the Value star */
+  .results-body > div { min-width: 0; }
+  .value-block { grid-column: 1 / -1; min-width: 0; padding-top: var(--cds-spacing-06); border-top: 1px solid var(--cds-border-subtle-00); }
+  .value-intro { color: var(--cds-text-secondary); margin: -.5rem 0 var(--cds-spacing-05); max-width: 72ch; }
+  .value-focus { display: flex; align-items: center; gap: var(--cds-spacing-05); flex-wrap: wrap; margin: 0 0 var(--cds-spacing-05); min-width: 0; }
+  .value-focus .lbl { color: var(--cds-text-secondary); }
+  .value-focus .vf-scroll { flex: 0 1 480px; min-width: 0; overflow-x: auto; }
+  .value-focus cds-content-switcher { width: 100%; min-width: max-content; }
+  cds-content-switcher:not(:defined) { display: inline-flex; gap: 2px; }
+  cds-content-switcher-item:not(:defined) { display: inline-block; padding: .5rem .75rem; background: var(--cds-layer-accent-01); font-size: .875rem; cursor: pointer; }
+  .value-chart { position: relative; max-width: 900px; overflow-x: auto; background: var(--cds-layer-01); padding: var(--cds-spacing-05) var(--cds-spacing-05) var(--cds-spacing-03); }
+  .value-chart svg { display: block; width: 100%; min-width: 640px; height: auto; font-family: var(--plex); }
+  .value-chart .zone { fill: var(--blue-60); fill-opacity: 0; }
+  .value-chart .zone.on { fill-opacity: .09; }
+  .value-chart .area { fill: var(--blue-20); }
+  .value-chart .zarea { fill: #a6c8ff; }
+  .value-chart .dline { stroke: #a8a8a8; stroke-width: 1; stroke-dasharray: 2 4; }
+  .value-chart .edge { fill: none; stroke: var(--blue-60); stroke-width: 2; stroke-dasharray: 7 5; stroke-linejoin: round; }
+  .value-chart .axis { stroke: #161616; stroke-width: 1; fill: none; }
+  .value-chart .arrow { fill: #161616; }
+  .value-chart .slabel { fill: #525252; }
+  .value-chart .halo { paint-order: stroke; stroke-width: 4px; stroke-linejoin: round; }
+  .value-chart .zlabel { fill: #161616; }
+  .value-chart .zlabel.dim { fill: #6f6f6f; }
+  .value-chart .zsub { fill: #6f6f6f; }
+  .value-chart .ns { fill: none; stroke: var(--blue-60); stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .value-chart .guide { stroke: var(--blue-60); stroke-width: 1; stroke-dasharray: 3 3; }
+  .value-chart .you { fill: var(--blue-60); stroke: #ffffff; stroke-width: 2; }
+  .value-chart .seg { cursor: default; }
+  .value-chart .seg:focus-visible { outline: none; stroke: var(--cds-focus); stroke-width: 3; }
+  .vtip { position: absolute; z-index: 3; display: none; background: #393939; color: #ffffff; font-size: .75rem; line-height: 1rem; letter-spacing: .32px; padding: .5rem .75rem; pointer-events: none; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); }
+  .vtip.on { display: block; }
+  .vtip b { display: block; font-weight: 600; }
+  .value-read { color: var(--cds-text-primary); margin: var(--cds-spacing-04) 0 0; max-width: 76ch; font-size: .9375rem; line-height: 1.5; }
+  .value-note { color: var(--cds-text-helper); font-size: .75rem; letter-spacing: .32px; margin: var(--cds-spacing-03) 0 0; max-width: 76ch; }
+
+  /* ---------- View navigation: Carbon line tabs under the hero ---------- */
+  .viewnav { background: var(--cds-background); border-bottom: 1px solid var(--cds-border-subtle-00); }
+  /* On narrow screens the bar scrolls sideways as one piece */
+  .viewnav .wrap { overflow-x: auto; }
+  .viewnav cds-tabs { min-width: max-content; }
+  cds-tabs:not(:defined) { display: flex; gap: var(--cds-spacing-06); }
+  cds-tab:not(:defined) { padding: .625rem 0; cursor: pointer; color: var(--cds-link-primary); }
+  .app .wrap[hidden] { display: none; }
+
+  /* ---------- Go deeper: three cards styled to the Carbon clickable tile spec ---------- */
+  .deep-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cds-spacing-05); padding: var(--cds-spacing-06); }
+  @media (max-width: 1055px) { .deep-cards { grid-template-columns: 1fr; } }
+  .deep-card {
+    position: relative; display: flex; flex-direction: column; gap: var(--cds-spacing-03); min-height: 13rem;
+    padding: var(--cds-spacing-05) var(--cds-spacing-05) var(--cds-spacing-09);
+    background: var(--cds-layer-01); color: var(--cds-text-primary); border-top: 3px solid var(--cds-border-subtle-01); text-decoration: none;
+    transition: background-color var(--duration-fast-02) var(--ease-standard), transform var(--duration-fast-02) var(--ease-standard);
+  }
+  .deep-card:hover { background: var(--cds-layer-hover-01); color: var(--cds-text-primary); text-decoration: none; }
+  .deep-card:focus-visible { outline: 2px solid var(--cds-focus); outline-offset: -2px; }
+  .deep-card.rec { border-top-color: var(--blue-60); }
+  .dc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--cds-spacing-03); min-height: 1.5rem; }
+  .dc-for { font-size: .75rem; line-height: 1rem; letter-spacing: .32px; color: var(--cds-text-helper); padding-top: .25rem; }
+  .dc-top cds-tag { flex: 0 0 auto; margin: 0; }
+  .dc-name { font-size: 1.25rem; line-height: 1.75rem; }
+  .dc-covers { color: var(--cds-text-secondary); max-width: 42ch; }
+  .dc-why { font-size: .75rem; line-height: 1rem; letter-spacing: .32px; color: var(--blue-70); }
+  .deep-card .dc-status { position: absolute; left: var(--cds-spacing-05); bottom: var(--cds-spacing-05); margin: 0; }
+  .dc-arrow { position: absolute; right: var(--cds-spacing-05); bottom: var(--cds-spacing-05); width: 20px; height: 20px; fill: var(--cds-interactive); transition: transform var(--duration-moderate-01) var(--ease-standard); }
+
+  /* ---------- Deep dive view ---------- */
+  .dim .cat { display: block; color: var(--cds-text-helper); font-size: .75rem; line-height: 1rem; letter-spacing: .08em; text-transform: uppercase; margin-bottom: .125rem; }
+  .dim .cat + b { font-weight: 600; }
+  .bar .track i.d { background: var(--blue-60); }
+  .next-list li.d { border-left-color: var(--blue-60); }
+  .callout { margin-top: var(--cds-spacing-06); max-width: 400px; background: var(--blue-10); border-left: 3px solid var(--blue-60); padding: var(--cds-spacing-05); }
+  .callout[hidden] { display: none; }
+  .callout p { margin: 0; font-size: .9375rem; line-height: 1.5; letter-spacing: 0; }
+  .callout b { font-weight: 600; }
+  .callout small { display: block; margin-top: .375rem; color: var(--cds-text-helper); font-size: .75rem; letter-spacing: .32px; }
+  .value-deeplink { margin-top: var(--cds-spacing-03); }
+  .value-deeplink[hidden] { display: none; }
+  .actions cds-button[hidden] { display: none; }
+
+  /* Actions */
+  .actions { display: flex; gap: var(--cds-spacing-03); flex-wrap: wrap; align-items: center; padding: var(--cds-spacing-05) var(--cds-spacing-06); border-top: 1px solid var(--cds-border-subtle-00); background: var(--cds-layer-01); }
+  .actions .toast { font-size: .8125rem; color: var(--cds-text-secondary); margin-left: auto; min-height: 1.25rem; opacity: 0; transform: translateY(4px); transition: opacity var(--duration-moderate-01) var(--ease-standard), transform var(--duration-moderate-01) var(--ease-standard); }
+  .actions .toast.show { opacity: 1; transform: none; }
+  cds-button svg { fill: currentColor; }
+  cds-button[kind="primary"] svg { fill: #fff; }
+
+  /* ============================================================
+     Polish: small feedback and motion details.
+     Only opacity and transform move, on Carbon's durations and curves.
+     ============================================================ */
+  ::selection { background: var(--cds-highlight); }
+  h2, h3, .placement .stage, .dc-name { text-wrap: balance; }
+  p, .tile .txt, .dc-covers, .legend small { text-wrap: pretty; }
+  #results, #dResults, #deeper { scroll-margin-top: var(--cds-spacing-05); }
+  .row, .matrix-foot { scroll-margin: 5rem 0 var(--cds-spacing-06); }
+  [tabindex="-1"]:focus { outline: none; }
+
+  /* Pressing a tile or a card gives a little, so the page feels like it heard you */
+  .tile, .deep-card { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .tile:active { transform: scale(.985); }
+  .deep-card:active { transform: scale(.99); }
+  @media (hover: hover) and (pointer: fine) { .deep-card:hover .dc-arrow { transform: translateX(4px); } }
+
+  /* A page change, a new placement and a moved dot arrive softly instead of snapping */
+  @keyframes rise-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes settle-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  .view-enter { animation: rise-in var(--duration-moderate-02) var(--ease-entrance-expressive); }
+  .soft-in { animation: settle-in var(--duration-moderate-01) var(--ease-entrance); }
+  .value-chart .you-fade.moved { animation: fade-in var(--duration-moderate-02) var(--ease-entrance); }
+
+  /* Things that show up on their own ease in */
+  .appear { transition: opacity var(--duration-moderate-01) var(--ease-entrance), transform var(--duration-moderate-01) var(--ease-entrance); }
+  @starting-style { .appear { opacity: 0; transform: translateY(4px); } }
+
+  /* Keyboard users can jump past the header */
+  .skip-link { position: absolute; left: var(--cds-spacing-05); top: var(--cds-spacing-03); z-index: 10; padding: .75rem 1rem; background: var(--cds-background); color: var(--cds-text-secondary); border: 4px solid var(--cds-focus); transform: translateY(-200%); }
+  .skip-link:focus { transform: none; outline: none; text-decoration: none; color: var(--cds-text-secondary); }
+  .noscript { margin: 0; padding: var(--cds-spacing-05) var(--cds-spacing-06); background: var(--yellow-10); border-left: 3px solid var(--yellow-30); }
+
+  /* ---------- Footer ---------- */
+  .foot { max-width: 1312px; margin: var(--cds-spacing-07) auto var(--cds-spacing-10); padding: 0 var(--cds-spacing-06); font-size: .75rem; line-height: 1.6; letter-spacing: .32px; color: var(--cds-text-helper); display: grid; grid-template-columns: 1fr 1fr; gap: var(--cds-spacing-07); }
+  @media (max-width: 671px) { .foot { grid-template-columns: 1fr; padding: 0 var(--cds-spacing-05); } }
+  .foot b { color: var(--cds-text-secondary); font-weight: 600; }
+
+  /* ---------- Embed mode ---------- */
+  body.embed .hero, body.embed .foot { display: none; }
+  body.embed .app { padding-top: var(--cds-spacing-05); }
+
+  /* ---------- Print report ---------- */
+  #printReport { display: none; }
+  @media print {
+    @page { size: A4; margin: 14mm; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #fff; }
+    .hero, .viewnav, .app, .foot { display: none !important; }
+    #printReport { display: block !important; font-family: var(--plex); color: #161616; font-size: 11px; line-height: 1.5; }
+    .pr-top { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #161616; padding-bottom: 8px; margin-bottom: 14px; }
+    .pr-top .brand { font-size: 13px; font-weight: 600; }
+    .pr-top .date { font-size: 11px; color: #525252; }
+    #printReport h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+    #printReport .sub { font-size: 11.5px; color: #525252; margin: 0 0 14px; }
+    .pr-kpis { display: flex; border: 1px solid #c6c6c6; margin: 0 0 14px; }
+    .pr-kpi { flex: 1; padding: 10px 12px; border-right: 1px solid #c6c6c6; }
+    .pr-kpi:last-child { border-right: 0; }
+    .pr-kpi .k { font-size: 9.5px; text-transform: uppercase; letter-spacing: .04em; color: #525252; }
+    .pr-kpi .v { font-size: 17px; font-weight: 600; margin-top: 3px; }
+    .pr-msg { border-left: 3px solid #0f62fe; background: #f4f4f4; padding: 10px 12px; margin: 0 0 14px; }
+    #printReport h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin: 14px 0 6px; }
+    .pr-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+    .pr-table th { text-align: left; font-weight: 600; padding: 5px 6px; border-bottom: 1px solid #8d8d8d; }
+    .pr-table td { padding: 5px 6px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+    .pr-table td:first-child { width: 22%; font-weight: 600; }
+    .pr-table td:nth-child(2) { width: 16%; white-space: nowrap; }
+    .pr-foot { font-size: 9px; color: #6f6f6f; margin-top: 14px; line-height: 1.5; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
+    .tile:active, .deep-card:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main" id="skipLink">Skip to main content</a>
+<noscript><p class="noscript">This assessment needs JavaScript to run. Turn it on in your browser and reload the page.</p></noscript>
+
+<!-- ============================ HERO ============================ -->
+<header class="hero" id="hero">
+  <div class="wrap">
+    <div class="topbar">
+      <svg class="ibm-logo" viewBox="0 0 1075 401.15" role="img" aria-label="IBM" xmlns="http://www.w3.org/2000/svg">
+        <title>IBM</title>
+        <g fill="#161616">
+          <g><rect y="373.17" width="194.43" height="27.932"/><rect y="319.83" width="194.43" height="27.932"/><rect x="55.468" y="266.54" width="83.399" height="27.932"/><rect x="55.468" y="213.25" width="83.399" height="27.932"/><rect x="55.468" y="159.96" width="83.399" height="27.932"/><rect x="55.468" y="106.58" width="83.399" height="27.932"/><rect y="53.288" width="194.43" height="27.932"/><rect width="194.43" height="27.932"/></g>
+          <g><path d="m222.17 400.85 207.11 0.297c27.734 0 52.793-10.697 71.513-27.932h-278.62z"/><path d="m222.17 347.76h299.03c5.051-8.617 8.815-18.027 11.094-27.932h-310.12z"/><rect x="277.73" y="266.54" width="83.3" height="27.932"/><path d="m444.43 266.54v27.932h90.927c0-9.608-1.288-19.017-3.764-27.932z"/><path d="m497.92 213.25h-220.19v27.932h243.46c-6.34-10.698-14.165-20.107-23.277-27.932z"/><path d="m277.73 159.96v27.932h220.19c9.311-7.825 17.135-17.235 23.277-27.932z"/><rect x="277.73" y="106.58" width="83.3" height="27.932"/><path d="m444.43 134.51h87.163c2.476-8.914 3.764-18.324 3.764-27.932h-90.927z"/><path d="m521.2 53.288h-299.03v27.932h310.12c-2.575-9.905-6.339-19.314-11.093-27.932z"/><path d="m429.28 0h-207.11v27.932h278.53c-18.621-17.235-43.878-27.932-71.414-27.932z"/></g>
+          <g><polygon points="555.57 81.22 742.67 81.22 733.06 53.288 555.57 53.288"/><polygon points="555.57 27.932 724.25 27.932 714.64 0 555.57 0"/><polygon points="861.03 401.17 861.03 373.24 1000 373.24 1000 401.17"/><polygon points="861.03 347.76 861.03 319.83 1000 319.83 1000 347.76"/><polygon points="777.73 182.54 769.91 159.96 694.43 159.96 611.03 159.96 611.03 187.89 694.43 187.89 694.43 162.24 703.25 187.89 852.22 187.89 861.03 162.24 861.03 187.89 944.43 187.89 944.43 159.96 861.03 159.96 785.56 159.96"/><polygon points="944.43 106.58 803.98 106.58 794.37 134.51 944.43 134.51"/><polygon points="1000 27.932 1000 0 840.93 0 831.32 27.932"/><polygon points="768.13 373.22 777.73 400.85 787.34 373.22"/><polygon points="749.5 319.83 759.31 347.76 796.16 347.76 806.06 319.83"/><polygon points="730.78 266.54 740.59 294.47 814.88 294.47 824.68 266.54"/><polygon points="721.97 241.18 833.6 241.18 843.11 213.25 712.36 213.25"/><polygon points="611.03 134.51 761.09 134.51 751.49 106.58 611.03 106.58"/><polygon points="1000 53.288 822.4 53.288 812.9 81.22 1000 81.22"/><rect x="555.57" y="373.22" width="138.97" height="27.932"/><rect x="555.57" y="319.83" width="138.97" height="27.932"/><rect x="611.03" y="266.54" width="83.399" height="27.932"/><rect x="611.03" y="213.25" width="83.399" height="27.932"/><rect x="861.03" y="213.25" width="83.399" height="27.932"/><rect x="861.03" y="266.54" width="83.399" height="27.932"/></g>
+          <path d="m1052 357.15a22 22 0 0 0-22 22 22 22 0 0 0 22 22 22 22 0 0 0 22-22 22 22 0 0 0-22-22zm0 4a18 18 0 0 1 18 18 18 18 0 0 1-18 18 18 18 0 0 1-18-18 18 18 0 0 1 18-18zm-9.3476 6.793v22.414h5.453v-7.7305h3.0978l4.164 7.7305h5.9804l-5.0234-8.582c2.4616-0.96446 4.0624-3.2158 4.0624-6.75 0-4.0818-2.5594-7.082-7.582-7.082zm5.453 4.2891h4.0548c1.7114 0 2.668 0.75016 2.668 2.3555v1.6133c0 1.6053-0.9566 2.3594-2.668 2.3594h-4.0548z"/>
+        </g>
+      </svg>
+      <span class="sep"></span>
+      <span class="kicker">Autonomous operations</span>
+    </div>
+    <nav class="crumbs" aria-label="Breadcrumb" id="crumbs">IBM / Autonomous operations / Self-assessment</nav>
+
+    <div class="hero-grid">
+      <div id="heroCopy">
+        <div class="eyebrow" id="heroEyebrow">Agent-ready maturity model</div>
+        <h1 id="heroTitle" tabindex="-1">Where does your organization stand today?</h1>
+        <p class="lede">Pick the sentence that sounds most like your organization today, one per row.</p>
+      </div>
+      <div class="legend" aria-label="The four stages">
+        <div><span class="n">Stage 1</span><b>Manual</b><small>People do everything. Tools help a little.</small></div>
+        <div><span class="n">Stage 2</span><b>Assisted</b><small>Agents suggest. People decide and act.</small></div>
+        <div><span class="n">Stage 3</span><b>Semi-autonomous</b><small>Agents act on small things. People approve big things.</small></div>
+        <div><span class="n">Stage 4</span><b>Governed autonomy</b><small>People set the guardrails. Agents act within them.</small></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ VIEW NAVIGATION ============================ -->
+<nav class="viewnav" aria-label="Assessments">
+  <div class="wrap">
+    <cds-tabs id="viewTabs" value="overview">
+      <cds-tab id="tab-overview" value="overview">Overview</cds-tab>
+      <cds-tab id="tab-security" value="security">Security</cds-tab>
+      <cds-tab id="tab-operations" value="operations">Operations</cds-tab>
+      <cds-tab id="tab-cost" value="cost">Cost governance</cds-tab>
+    </cds-tabs>
+  </div>
+</nav>
+
+<!-- ============================ APP ============================ -->
+<main class="app" id="main" tabindex="-1">
+  <div class="wrap" id="viewOverview" role="tabpanel" aria-labelledby="tab-overview">
+
+    <!-- ---------- STEP 1: MATRIX ---------- -->
+    <section class="panel" aria-labelledby="h-matrix">
+      <div class="panel-h">
+        <h2 id="h-matrix" tabindex="-1">Place your organization on each row</h2>
+        <div class="topbar-progress">
+          <cds-progress-bar id="progressTop" label="0 of 8 answered" max="8" value="0" size="small"></cds-progress-bar>
+        </div>
+      </div>
+
+      <div class="matrix" id="matrix">
+        <div class="mhead" aria-hidden="true">
+          <div>Dimension</div>
+          <div><span class="stg">Stage 1</span>Manual</div>
+          <div><span class="stg">Stage 2</span>Assisted</div>
+          <div><span class="stg">Stage 3</span>Semi-autonomous</div>
+          <div><span class="stg">Stage 4</span>Governed autonomy</div>
+        </div>
+        <!-- rows are rendered by script -->
+      </div>
+      <div class="matrix-foot" id="matrixFoot">
+        <p class="muted" id="matrixHint">Answer all eight rows to see your placement.</p>
+        <cds-button class="appear" id="toResults" kind="ghost" hidden>
+          See your placement
+          <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="9.3,3.7 13.1,7.5 1,7.5 1,8.5 13.1,8.5 9.3,12.3 10,13 15,8 10,3"/></svg>
+        </cds-button>
+      </div>
+    </section>
+
+    <!-- ---------- RESULTS ---------- -->
+    <section class="panel results" id="results" aria-labelledby="h-results" aria-live="polite">
+      <div class="panel-h">
+        <div>
+          <h2 id="h-results">Your placement</h2>
+          <p>Your stage is the lower of your autonomy and controls scores.</p>
+        </div>
+      </div>
+
+      <div class="results-body">
+        <!-- Left column -->
+        <div>
+          <cds-progress-bar id="progress" label="Rows answered" helper-text="0 of 8 answered" max="8" value="0" size="small"></cds-progress-bar>
+
+          <div class="placement" id="placement">
+            <div class="stage" id="stageLine">Not yet placed</div>
+            <p class="provisional" id="provisional">Answer all eight rows to get a placement.</p>
+          </div>
+
+          <cds-inline-notification class="appear" id="note" kind="info" low-contrast hide-close-button title="" subtitle="" hidden></cds-inline-notification>
+
+          <div class="plot-wrap" role="img" aria-label="Autonomy plotted against controls" id="plotWrap">
+            <div class="plot-y">Autonomy, low to high</div>
+            <div class="plot">
+              <svg viewBox="0 0 300 300" aria-hidden="true">
+                <polygon points="0,0 300,0 0,300" fill="#fff1f1" opacity=".45"/>
+                <g stroke="#e0e0e0" stroke-width="1">
+                  <line x1="100" y1="0" x2="100" y2="300"/><line x1="200" y1="0" x2="200" y2="300"/>
+                  <line x1="0" y1="100" x2="300" y2="100"/><line x1="0" y1="200" x2="300" y2="200"/>
+                </g>
+                <line x1="0" y1="300" x2="300" y2="0" stroke="#8d8d8d" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+                <g id="youDot" style="display:none">
+                  <circle class="you" id="youRing" cx="0" cy="300" r="10" fill="#ffffff"/>
+                  <circle class="you" id="you" cx="0" cy="300" r="8" fill="#0f62fe"/>
+                </g>
+              </svg>
+              <div class="q tl">Agents ahead<br>of controls</div>
+              <div class="q tr">Autonomy you<br>can trust</div>
+              <div class="q bl">Early days<br>on both</div>
+              <div class="q br">Controls ready<br>for more</div>
+            </div>
+            <div class="plot-x">Controls, low to high</div>
+          </div>
+
+          <div class="scores">
+            <div class="score">
+              <div class="k"><i class="sw sw-a"></i>Autonomy</div>
+              <div class="v" id="sA">Pending</div>
+              <div class="d">Who decides, who does the work, what you see, what you optimize</div>
+            </div>
+            <div class="score">
+              <div class="k"><i class="sw sw-g"></i>Controls</div>
+              <div class="v" id="sG">Pending</div>
+              <div class="d">Agent access, limits, how you check, how you measure trust</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div>
+          <div class="block">
+            <h3>Profile by dimension</h3>
+            <div class="chart-legend" aria-hidden="true"><span><i class="a"></i>Autonomy</span><span><i class="g"></i>Controls</span></div>
+            <div class="bars" id="bars"></div>
+          </div>
+
+          <div class="block">
+            <h3>The three foundations</h3>
+            <div class="found" id="found"></div>
+          </div>
+
+          <div class="block" id="next">
+            <h3 id="nextTitle">What the next stage requires</h3>
+            <p class="muted" id="nextIntro">Shown once every row is answered.</p>
+            <ul class="next-list" id="nextList"></ul>
+          </div>
+        </div>
+
+        <!-- Full width: how AI value builds -->
+        <div class="block value-block" id="valueBlock">
+          <h3>How AI value builds</h3>
+          <p class="value-intro">The higher your organization sits on the maturity scale, the further along the value curve it reaches. Security value comes first, then operational value, then the money.</p>
+          <div class="value-focus">
+            <span class="lbl">What matters most to you?</span>
+            <div class="vf-scroll">
+              <cds-content-switcher id="valueFocus" value="all">
+                <cds-content-switcher-item value="all" selected>All</cds-content-switcher-item>
+                <cds-content-switcher-item value="security">Security</cds-content-switcher-item>
+                <cds-content-switcher-item value="operations">Operations</cds-content-switcher-item>
+                <cds-content-switcher-item value="cost">Cost</cds-content-switcher-item>
+              </cds-content-switcher>
+            </div>
+          </div>
+          <div class="value-chart" id="valueChart">
+            <svg id="valueSvg" viewBox="0 0 760 384" role="img" aria-labelledby="valueSvgTitle"><title id="valueSvgTitle">Maturity stage against AI value. The curve rises from the Manual stage through Assisted and Semi-autonomous to Governed autonomy as value moves from security value to operational value to cost and revenue value, ending at a Value north star, with your position marked.</title></svg>
+            <div class="vtip" id="vtip" role="tooltip"></div>
+          </div>
+          <p class="value-read" id="valueRead">Your position on the curve appears once every row is answered.</p>
+          <cds-button class="value-deeplink appear" id="valueDeepLink" kind="ghost" size="sm" hidden>
+            <span id="valueDeepLinkLabel">Go deeper</span>
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="9.3,3.7 13.1,7.5 1,7.5 1,8.5 13.1,8.5 9.3,12.3 10,13 15,8 10,3"/></svg>
+          </cds-button>
+          <p class="value-note">The curve is illustrative. Each stage name marks a level. Your dot sits on the curve at the level of your placement score, the lower of autonomy and controls, and where it lands shows the value you reach.</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <cds-button id="copyBtn" kind="primary">
+          Copy summary
+          <svg slot="icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M28,10V28H10V10H28m0-2H10a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V10a2,2,0,0,0-2-2Z"/><path d="M4,18H2V4A2,2,0,0,1,4,2H18V4H4Z"/></svg>
+        </cds-button>
+        <cds-button id="printBtn" kind="tertiary">
+          Print or save as PDF
+          <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="13,7 12.3,6.3 8.5,10.1 8.5,1 7.5,1 7.5,10.1 3.7,6.3 3,7 8,12"/><path d="M13,12v2H3v-2H2v2c0,0.6,0.4,1,1,1h10c0.6,0,1-0.4,1-1v-2H13z"/></svg>
+        </cds-button>
+        <cds-button id="resetBtn" kind="ghost">
+          Clear answers
+          <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13,9c0,2.8-2.2,5-5,5s-5-2.2-5-5s2.2-5,5-5h3.1L9.3,5.8L10,6.5l3-3l-3-3L9.3,1.2L11.1,3H8C4.7,3,2,5.7,2,9s2.7,6,6,6s6-2.7,6-6H13z"/></svg>
+        </cds-button>
+        <span class="toast" id="toast" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <!-- ---------- GO DEEPER ---------- -->
+    <section class="panel" id="deeper" aria-labelledby="h-deeper">
+      <div class="panel-h">
+        <div>
+          <h2 id="h-deeper">Go deeper</h2>
+          <p>Three focused assessments, four rows each. Pick the one closest to your role.</p>
+        </div>
+      </div>
+      <div class="deep-cards" id="deepCards"></div>
+    </section>
+
+  </div>
+
+  <!-- ============================ DEEP DIVE VIEW ============================ -->
+  <div class="wrap" id="viewDeep" role="tabpanel" aria-labelledby="tab-security" hidden>
+
+    <section class="panel" aria-labelledby="h-dmatrix">
+      <div class="panel-h">
+        <div>
+          <h2 id="h-dmatrix" tabindex="-1">Place your organization on each row</h2>
+          <p id="dFor"></p>
+        </div>
+        <div class="topbar-progress">
+          <cds-progress-bar id="dProgressTop" label="0 of 4 answered" max="4" value="0" size="small"></cds-progress-bar>
+        </div>
+      </div>
+      <div class="matrix" id="dMatrix"><!-- rows are rendered by script --></div>
+      <div class="matrix-foot" id="dMatrixFoot">
+        <p class="muted" id="dHint">Answer all four rows to see your placement.</p>
+        <cds-button class="appear" id="dToResults" kind="ghost" hidden>
+          See your placement
+          <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="9.3,3.7 13.1,7.5 1,7.5 1,8.5 13.1,8.5 9.3,12.3 10,13 15,8 10,3"/></svg>
+        </cds-button>
+      </div>
+    </section>
+
+    <section class="panel results" id="dResults" aria-labelledby="h-dresults" aria-live="polite">
+      <div class="panel-h">
+        <div>
+          <h2 id="h-dresults">Your placement</h2>
+          <p>Your stage here is the average of the four rows, rounded.</p>
+        </div>
+      </div>
+
+      <div class="results-body">
+        <div>
+          <cds-progress-bar id="dProgress" label="Rows answered" helper-text="0 of 4 answered" max="4" value="0" size="small"></cds-progress-bar>
+          <div class="placement" id="dPlacement">
+            <div class="stage" id="dStageLine">Not yet placed</div>
+            <p class="provisional" id="dProvisional">Answer all four rows to get a placement.</p>
+          </div>
+          <cds-inline-notification class="appear" id="dNote" kind="info" low-contrast hide-close-button title="" subtitle="" hidden></cds-inline-notification>
+          <div class="scores">
+            <div class="score">
+              <div class="k" id="dScoreLabel">Score</div>
+              <div class="v" id="dScore">Pending</div>
+              <div class="d">Average of the four rows</div>
+            </div>
+            <div class="score">
+              <div class="k">Overview placement</div>
+              <div class="v" id="dOverview">Pending</div>
+              <div class="d" id="dOverviewSub">Answer the overview to compare</div>
+            </div>
+          </div>
+          <div class="callout" id="dCallout" hidden><p id="dCalloutText"></p><small id="dCalloutSrc"></small></div>
+        </div>
+        <div>
+          <div class="block">
+            <h3>Profile by row</h3>
+            <div class="bars" id="dBars"></div>
+          </div>
+          <div class="block">
+            <h3 id="dNextTitle">What the next stage requires</h3>
+            <p class="muted" id="dNextIntro">Shown once every row is answered.</p>
+            <ul class="next-list" id="dNextList"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <cds-button id="dNext" kind="primary">
+          <span id="dNextLabel">Next</span>
+          <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="9.3,3.7 13.1,7.5 1,7.5 1,8.5 13.1,8.5 9.3,12.3 10,13 15,8 10,3"/></svg>
+        </cds-button>
+        <cds-button id="dBack" kind="tertiary">Back to overview</cds-button>
+        <cds-button id="dCopy" kind="ghost">
+          Copy summary
+          <svg slot="icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M28,10V28H10V10H28m0-2H10a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V10a2,2,0,0,0-2-2Z"/><path d="M4,18H2V4A2,2,0,0,1,4,2H18V4H4Z"/></svg>
+        </cds-button>
+        <cds-button id="dReset" kind="ghost">
+          Clear these answers
+          <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13,9c0,2.8-2.2,5-5,5s-5-2.2-5-5s2.2-5,5-5h3.1L9.3,5.8L10,6.5l3-3l-3-3L9.3,1.2L11.1,3H8C4.7,3,2,5.7,2,9s2.7,6,6,6s6-2.7,6-6H13z"/></svg>
+        </cds-button>
+        <span class="toast" id="dToast" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div id="printReport" aria-hidden="true"></div>
+
+<footer class="foot">
+  <div id="footScore"><b>How it scores.</b> Each answer is a stage from 1 to 4. Autonomy averages the first four rows, controls the last four. Your placement is the lower of the two, rounded.</div>
+  <div><b>Privacy.</b> Your answers stay in this browser. Nothing is sent anywhere.</div>
+</footer>
+
+<script>
+/* ============================================================
+   Content. Edit here.
+   ============================================================ */
+const STAGES = ["Manual", "Assisted", "Semi-autonomous", "Governed autonomy"];
+
+// Rows are grouped under the framework's four categories. The first four rows
+// score the autonomy axis ("A"), the last four score the controls axis ("G").
+const DIMS = [
+  { id: "context", axis: "A", group: "Intelligence", name: "What you see", opts: [
+    "Many tools, old data. People connect the dots.",
+    "Data is connected, but not live.",
+    "Live, connected view across systems.",
+    "Live view shared by every agent and system." ] },
+  { id: "decides", axis: "A", group: "Operations", name: "Who decides", opts: [
+    "A person decides everything.",
+    "A person decides. Agents suggest.",
+    "Agents decide small things. People approve big things.",
+    "Agents decide. People set the goals and check exceptions." ] },
+  { id: "optim", axis: "A", group: "Operations", name: "What you optimize", opts: [
+    "Keep it running.",
+    "Keep it running and watch the cost.",
+    "Balance performance, cost, and risk, with approval.",
+    "Balance all three automatically against business goals." ] },
+  { id: "executes", axis: "A", group: "Action", name: "Who does the work", opts: [
+    "People make every change, by hand or with scripts.",
+    "Agents prepare the change. People run it.",
+    "Agents run low-risk changes. People run the rest.",
+    "Agents run everything, including fixes and rollbacks." ] },
+  { id: "identity", axis: "G", group: "Control", name: "Agent access", opts: [
+    "No agent accounts. Shared passwords and keys.",
+    "Agents can read, not change.",
+    "Each agent gets only what it needs, for a short time.",
+    "Each agent has its own identity and can be cut off instantly." ] },
+  { id: "guard", axis: "G", group: "Control", name: "Limits", opts: [
+    "A change board and experience.",
+    "Every suggestion comes with evidence. People check it.",
+    "Rules are enforced automatically. Damage is capped.",
+    "Hard limits agents cannot change. Agents work in a fenced area." ] },
+  { id: "verify", axis: "G", group: "Control", name: "How you check", opts: [
+    "Review after something goes wrong.",
+    "A person checks every suggestion.",
+    "A second agent checks the first. Rollback plan set before acting.",
+    "Checks run all the time. Rollback is automatic." ] },
+  { id: "trust", axis: "G", group: "Control", name: "How you measure trust", opts: [
+    "Not measured.",
+    "How often people accept suggestions.",
+    "How often agent actions succeed, and how fast rollback works.",
+    "A trust score that includes incidents agents caused." ] }
+];
+
+const GROUPS = [
+  { id: "Intelligence", axis: "A", sub: "What you can see" },
+  { id: "Operations", axis: "A", sub: "How decisions get made" },
+  { id: "Action", axis: "A", sub: "Who carries out changes" },
+  { id: "Control", axis: "G", sub: "How you stay in charge" }
+];
+
+// The three deep dives. Each is a four-row double click on one value zone of the
+// overview, written for the people who own that area. The id doubles as the page
+// link (index.html#security) and matches the value zone id. "related" lists the
+// overview rows used to suggest where to start.
+const DEEP = [
+  { id: "security", name: "Security", model: "Security model",
+    title: "Where does your agent security stand today?",
+    for: "For security, risk and identity teams",
+    related: ["identity", "guard", "verify", "trust"],
+    callout: { html: "Gartner calls for <b>least-privilege access per agent</b> and <b>immutable audit trails</b> before agents scale.", src: "Gartner, April 2026" },
+    dims: [
+      { id: "identity", group: "Intelligence", name: "Agent identity", opts: [
+        "Shared accounts and static keys.",
+        "Agents read under a person's account.",
+        "Each agent has its own identity.",
+        "Access granted per task, then expires." ] },
+      { id: "touch", group: "Operations", name: "What agents can touch", opts: [
+        "Broad access. Reviewed yearly.",
+        "Read only. Agents see, not change.",
+        "Write access to low-risk systems.",
+        "Access matches the task, nothing more." ] },
+      { id: "rules", group: "Action", name: "How rules are enforced", opts: [
+        "Written rules. Checked in audits.",
+        "A person checks each action.",
+        "Rules as code. Checked before agents act.",
+        "Every action checked automatically." ] },
+      { id: "prove", group: "Control", name: "How you prove it", opts: [
+        "Logs pulled after an incident.",
+        "Every suggestion logged with approver.",
+        "Every action traced to an agent and a reason.",
+        "Continuous audit. Anomalies flagged live." ] }
+    ] },
+  { id: "operations", name: "Operations", model: "Operations model",
+    title: "Where do your operations stand today?",
+    for: "For infrastructure, platform and reliability teams",
+    related: ["context", "decides", "executes"],
+    callout: { html: "At Stage 3, <b>90% or more</b> of faults are located automatically and repaired in <b>under an hour</b>.", src: "Adapted from TM Forum, June 2026" },
+    dims: [
+      { id: "see", group: "Intelligence", name: "What you see", opts: [
+        "Many tools. People connect the dots.",
+        "Connected data, not real-time.",
+        "Live view across systems.",
+        "One live view shared by every agent." ] },
+      { id: "find", group: "Operations", name: "How you find problems", opts: [
+        "Users or alerts tell you.",
+        "Agents flag patterns.",
+        "Agents catch issues before users do.",
+        "Agents predict and prevent." ] },
+      { id: "fix", group: "Action", name: "Who fixes it", opts: [
+        "People, with runbooks.",
+        "Agents draft the fix. People run it.",
+        "Agents fix in-policy issues. People approve big ones.",
+        "Agents fix end to end. People review exceptions." ] },
+      { id: "ship", group: "Control", name: "How changes ship", opts: [
+        "Tickets and change windows.",
+        "People approve every change.",
+        "Low-risk changes run. Rollback planned first.",
+        "Continuous changes. Policy and guardrails are enforced automatically." ] }
+    ] },
+  { id: "cost", name: "Cost governance", model: "Cost governance model",
+    title: "Where does your cost governance stand today?",
+    for: "For FinOps, finance and engineering leaders",
+    related: ["optim"],
+    callout: null,
+    dims: [
+      { id: "know", group: "Intelligence", name: "What you know", opts: [
+        "Monthly bill, after the fact.",
+        "Spend by team and app, daily.",
+        "Live spend tied to performance.",
+        "Cost, performance, and value in one view." ] },
+      { id: "optimizes", group: "Operations", name: "Who optimizes", opts: [
+        "People, at budget reviews.",
+        "Agents recommend. People act.",
+        "Agents right size within limits.",
+        "Agents balance cost and performance against goals." ] },
+      { id: "limits", group: "Action", name: "How limits are enforced", opts: [
+        "Budgets and approvals.",
+        "Alerts when spend spikes.",
+        "Limits enforced before changes run.",
+        "Agents stay in budget. Exceptions go to people." ] },
+      { id: "aicost", group: "Control", name: "What AI itself costs", opts: [
+        "Not tracked.",
+        "Tracked per tool.",
+        "Tracked per agent and task.",
+        "Agents weigh their own cost against value." ] }
+    ] }
+];
+
+// How AI value builds. Maturity stage runs up the side: each stage name marks a
+// level, Manual at the floor and Governed autonomy at the top line. AI value runs
+// along the bottom in three equal zones. The curve is illustrative and doubles in
+// height across each zone (0.375, 0.75, 1.5, 3 levels), so it crosses the Assisted
+// level inside Operational value, the Semi-autonomous level inside Cost and revenue
+// value, and reaches the Governed autonomy level at the Value north star.
+const VALUE_START = 0.375;
+const VALUE_ZONES = [
+  { id: "security", name: "Security value", sub: "fewer incidents, less risk", lead: "is the first value on the curve." },
+  { id: "operations", name: "Operational value", sub: "faster changes, fewer tickets, less toil", lead: "comes next." },
+  { id: "cost", name: "Cost and revenue value", sub: "the money", lead: "is the last stretch and the biggest climb." }
+];
+let valueFocus = "all";
+
+const FOUND = [
+  { name: "Secure agent access", dim: "identity", sub: "Who an agent is and what it can touch" },
+  { name: "Live context", dim: "context", sub: "What an agent knows when it acts" },
+  { name: "Cost, performance and value", dim: "optim", sub: "What an agent is trying to achieve" }
+];
+
+function placementMessage(A, G) {
+  if (A - G >= 0.5) return { kind: "warning", title: "Agents are ahead of your controls.", text: "Fix the controls first. That is the fastest way up." };
+  if (G - A >= 0.5) return { kind: "success", title: "Your controls are ready for more.", text: "You can let agents do more without adding risk." };
+  return { kind: "info", title: "Autonomy and controls are in step.", text: "Move both up together, one step at a time." };
+}
+
+/* ============================================================
+   Icons (Carbon icon paths, 16px)
+   ============================================================ */
+const ICON = {
+  checkmarkFilled: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8,1C4.1,1,1,4.1,1,8c0,3.9,3.1,7,7,7s7-3.1,7-7C15,4.1,11.9,1,8,1z M7,11L4.3,8.3l0.9-0.8L7,9.3l4-3.9l0.9,0.8L7,11z"/></svg>',
+  warningFilled:   '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"/><path class="inner" d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"/></svg>',
+  errorFilled:     '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8,1C4.1,1,1,4.1,1,8s3.1,7,7,7s7-3.1,7-7S11.9,1,8,1z M10.7,11.5L4.5,5.3l0.8-0.8l6.2,6.2L10.7,11.5z"/></svg>',
+  circleDash:      '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7.7,4.7a14.7,14.7,0,0,0-3,3.1L6.3,9A13.26,13.26,0,0,1,8.9,6.3Z"/><path d="M4.6,12.3l-1.9-.6A12.51,12.51,0,0,0,2,16H4A11.48,11.48,0,0,1,4.6,12.3Z"/><path d="M2.7,20.4a14.4,14.4,0,0,0,2,3.9l1.6-1.2a12.89,12.89,0,0,1-1.7-3.3Z"/><path d="M7.8,27.3a14.4,14.4,0,0,0,3.9,2l.6-1.9A12.89,12.89,0,0,1,9,25.7Z"/><path d="M11.7,2.7l.6,1.9A11.48,11.48,0,0,1,16,4V2A12.51,12.51,0,0,0,11.7,2.7Z"/><path d="M24.2,27.3a15.18,15.18,0,0,0,3.1-3.1L25.7,23A11.53,11.53,0,0,1,23,25.7Z"/><path d="M27.4,19.7l1.9.6A15.47,15.47,0,0,0,30,16H28A11.48,11.48,0,0,1,27.4,19.7Z"/><path d="M29.2,11.6a14.4,14.4,0,0,0-2-3.9L25.6,8.9a12.89,12.89,0,0,1,1.7,3.3Z"/><path d="M24.1,4.6a14.4,14.4,0,0,0-3.9-2l-.6,1.9a12.89,12.89,0,0,1,3.3,1.7Z"/><path d="M20.3,29.3l-.6-1.9A11.48,11.48,0,0,1,16,28v2A21.42,21.42,0,0,0,20.3,29.3Z"/></svg>'
+};
+
+/* ============================================================
+   State
+   ============================================================ */
+const KEY = "ibm-aops-self-assessment-v3";
+let answers = {};
+try { const s = localStorage.getItem(KEY); if (s) answers = JSON.parse(s) || {}; } catch (e) { answers = {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(answers)); } catch (e) {} }
+
+// Deep dive answers, one set per model, kept apart from the overview answers
+const DEEP_KEY = "ibm-aops-deep-dives-v1";
+let deepAnswers = {};
+DEEP.forEach(m => { deepAnswers[m.id] = {}; });
+try { const s = localStorage.getItem(DEEP_KEY); if (s) { const o = JSON.parse(s) || {}; DEEP.forEach(m => { if (o[m.id] && typeof o[m.id] === "object") deepAnswers[m.id] = o[m.id]; }); } } catch (e) {}
+function saveDeep() { try { localStorage.setItem(DEEP_KEY, JSON.stringify(deepAnswers)); } catch (e) {} }
+
+const $ = id => document.getElementById(id);
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const f1 = n => n === null ? "" : n.toFixed(1);
+const axisVals = axis => DIMS.filter(d => d.axis === axis && answers[d.id]).map(d => answers[d.id]);
+const axisLabel = axis => axis === "A" ? "Autonomy" : "Controls";
+const axisTagType = axis => axis === "A" ? "cyan" : "purple";
+function stageOf(A, G) { return Math.max(1, Math.min(4, Math.round(Math.min(A, G)))); }
+
+/* ---------- small interaction helpers ---------- */
+const prefersReducedMotion = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+const scrollMode = () => prefersReducedMotion() ? "auto" : "smooth";
+// Restart a one-shot CSS animation on a node
+function replay(node, cls) { if (!node) return; node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
+// Was the last action made with a pointer? Keyboard actions never move or animate the page.
+let lastPointerAt = 0;
+document.addEventListener("pointerdown", () => { lastPointerAt = Date.now(); }, true);
+const byPointer = () => Date.now() - lastPointerAt < 1000;
+// After an answer, bring the next unanswered row (or the placement button) into view if it sits below the fold
+function afterAnswer(box, isAnswered, foot) {
+  if (!byPointer() || !window.matchMedia || !matchMedia("(min-width: 1056px)").matches) return;
+  const next = Array.from(box.querySelectorAll(".row[data-dim]")).find(r => !isAnswered(r.dataset.dim)) || foot;
+  if (next && next.getBoundingClientRect().bottom > window.innerHeight - 16) next.scrollIntoView({ behavior: scrollMode(), block: "nearest" });
+}
+// Keys 1 to 4 pick a stage in the row that has focus
+document.addEventListener("keydown", e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || !/^[1-4]$/.test(e.key)) return;
+  const row = e.target && e.target.closest ? e.target.closest(".row[data-dim]") : null;
+  if (!row) return;
+  const inp = row.querySelectorAll('input[type="radio"]')[+e.key - 1];
+  if (inp) { e.preventDefault(); inp.focus(); if (!inp.checked) inp.click(); }
+});
+
+/* ============================================================
+   Build the matrix
+   ============================================================ */
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function buildMatrix() {
+  const matrix = $("matrix");
+  let lastGroup = null;
+  DIMS.forEach(d => {
+    if (d.group !== lastGroup) {
+      const g = GROUPS.find(x => x.id === d.group) || { id: d.group, axis: d.axis, sub: "" };
+      const head = el("div", "ghead");
+      const left = el("div");
+      left.appendChild(el("span", "gname", g.id));
+      if (g.sub) left.appendChild(el("span", "gsub", g.sub));
+      head.appendChild(left);
+      const tag = document.createElement("cds-tag"); tag.setAttribute("type", axisTagType(g.axis)); tag.setAttribute("size", "sm"); tag.textContent = axisLabel(g.axis);
+      head.appendChild(tag);
+      matrix.appendChild(head);
+      lastGroup = d.group;
+    }
+    const row = el("div", "row"); row.dataset.dim = d.id; row.setAttribute("role", "radiogroup"); row.setAttribute("aria-labelledby", "dim-" + d.id);
+    const lab = el("div", "dim");
+    const b = el("b", null, d.name); b.id = "dim-" + d.id;
+    lab.appendChild(b);
+    row.appendChild(lab);
+
+    d.opts.forEach((t, i) => {
+      const stage = i + 1;
+      const tile = el("label", "tile"); tile.dataset.dim = d.id; tile.dataset.stage = stage;
+      const inp = document.createElement("input"); inp.type = "radio"; inp.name = d.id; inp.value = stage;
+      inp.setAttribute("aria-label", "Stage " + stage + ", " + STAGES[i] + ". " + t);
+      inp.checked = answers[d.id] === stage;
+      inp.addEventListener("change", () => { answers[d.id] = stage; save(); render(); afterAnswer($("matrix"), id => !!answers[id], $("matrixFoot")); });
+      tile.appendChild(inp);
+      tile.appendChild(el("span", "stage-mark", "Stage " + stage + ", " + STAGES[i]));
+      tile.appendChild(el("span", "txt", t));
+      tile.insertAdjacentHTML("beforeend", ICON.checkmarkFilled.replace("<svg ", '<svg class="check" '));
+      row.appendChild(tile);
+    });
+    matrix.appendChild(row);
+  });
+}
+
+/* ============================================================
+   Render
+   ============================================================ */
+function render() {
+  // tiles
+  $("matrix").querySelectorAll(".tile").forEach(t => {
+    const on = answers[t.dataset.dim] == t.dataset.stage;
+    t.classList.toggle("on", on);
+    const inp = t.querySelector("input"); if (inp.checked !== on) inp.checked = on;
+  });
+
+  $("matrix").querySelectorAll(".row[data-dim]").forEach(r => r.classList.toggle("answered", !!answers[r.dataset.dim]));
+
+  const n = Object.keys(answers).length;
+  const A = mean(axisVals("A"));
+  const G = mean(axisVals("G"));
+  const complete = n === 8;
+
+  // progress, in the matrix header and in the results panel
+  const pt = $("progressTop");
+  pt.setAttribute("value", n);
+  pt.setAttribute("label", n + " of 8 answered");
+  pt.setAttribute("status", complete ? "finished" : "active");
+  $("matrixHint").hidden = complete;
+  $("toResults").hidden = !complete;
+  const pb = $("progress");
+  pb.setAttribute("value", n);
+  pb.setAttribute("helper-text", n + " of 8 answered");
+  pb.setAttribute("status", complete ? "finished" : "active");
+
+  // scores
+  $("sA").innerHTML = A === null ? "Pending" : f1(A) + " <small>of 4</small>";
+  $("sG").innerHTML = G === null ? "Pending" : f1(G) + " <small>of 4</small>";
+
+  // plot
+  const dotGroup = $("youDot");
+  if (A !== null && G !== null) {
+    // stages 1 to 4 map to an inset range so a point on 1 or 4 stays fully inside the box
+    const pos = v => 24 + (v - 1) / 3 * 252;
+    const cx = pos(G), cy = 300 - pos(A);
+    dotGroup.style.display = "";
+    ["you", "youRing"].forEach(id => { $(id).setAttribute("cx", cx); $(id).setAttribute("cy", cy); });
+    $("plotWrap").setAttribute("aria-label", "Autonomy " + f1(A) + " of 4 plotted against controls " + f1(G) + " of 4");
+  } else {
+    dotGroup.style.display = "none";
+    $("plotWrap").setAttribute("aria-label", "Autonomy plotted against controls. No point yet.");
+  }
+
+  // placement
+  const note = $("note");
+  if (!complete) {
+    $("stageLine").textContent = n ? "Provisional" : "Not yet placed";
+    $("provisional").textContent = n
+      ? (8 - n) + (8 - n === 1 ? " row" : " rows") + " left."
+      : "Answer all eight rows to get a placement.";
+    $("provisional").hidden = false;
+    note.hidden = true;
+  } else {
+    const st = stageOf(A, G);
+    const stageHtml = "Stage " + st + ": <b>" + STAGES[st - 1] + "</b>";
+    if ($("stageLine").innerHTML !== stageHtml) { $("stageLine").innerHTML = stageHtml; replay($("placement"), "soft-in"); }
+    $("provisional").hidden = true;
+    const m = placementMessage(A, G);
+    note.setAttribute("kind", m.kind);
+    note.setAttribute("title", m.title);
+    note.setAttribute("subtitle", m.text);
+    note.hidden = false;
+  }
+
+  // bars
+  const bars = $("bars"); bars.innerHTML = "";
+  DIMS.forEach(d => {
+    const v = answers[d.id] || 0;
+    const cls = d.axis === "A" ? "a" : "g";
+    const bar = el("div", "bar");
+    bar.appendChild(el("span", "lab", d.name));
+    const track = el("span", "track");
+    track.setAttribute("role", "img");
+    track.setAttribute("aria-label", d.name + ": " + (v ? "stage " + v + ", " + STAGES[v - 1] : "not answered"));
+    for (let i = 1; i <= 4; i++) track.appendChild(el("i", i <= v ? cls : ""));
+    bar.appendChild(track);
+    bar.appendChild(el("span", "val", v ? "Stage " + v : "Not answered"));
+    bars.appendChild(bar);
+  });
+
+  // foundations
+  const fd = $("found"); fd.innerHTML = "";
+  FOUND.forEach(f => {
+    const v = answers[f.dim];
+    const s = !v ? ["none", "Not answered", ICON.circleDash]
+      : v >= 3 ? ["ok", "In place", ICON.checkmarkFilled]
+      : v === 2 ? ["mid", "Partial", ICON.warningFilled]
+      : ["low", "Missing", ICON.errorFilled];
+    const cell = el("div");
+    cell.appendChild(el("b", null, f.name));
+    cell.appendChild(el("small", null, f.sub));
+    const status = el("span", "status " + s[0]);
+    status.innerHTML = s[2] + "<span>" + s[1] + "</span>";
+    cell.appendChild(status);
+    fd.appendChild(cell);
+  });
+
+  renderValueChart();
+
+  // next stage
+  const list = $("nextList"); list.innerHTML = "";
+  if (!complete) {
+    $("nextTitle").textContent = "What the next stage requires";
+    $("nextIntro").textContent = "Shown once every row is answered.";
+    reportHeight(); return;
+  }
+  const st = stageOf(A, G);
+  if (st === 4) {
+    $("nextTitle").textContent = "You are at the last stage";
+    $("nextIntro").textContent = "The work now is keeping trust measured and widening scope one area at a time.";
+    reportHeight(); return;
+  }
+  const target = st + 1;
+  const below = DIMS.filter(d => answers[d.id] < target);
+  $("nextTitle").textContent = "What " + STAGES[target - 1] + " requires";
+  $("nextIntro").textContent = below.length
+    ? "Rows still below stage " + target + ", with the statement to aim for."
+    : "Every row is already at stage " + target + " or above. The lower axis average holds the placement back.";
+  below.forEach(d => {
+    const li = el("li", d.axis === "A" ? "a" : "");
+    const tag = document.createElement("cds-tag"); tag.setAttribute("type", axisTagType(d.axis)); tag.setAttribute("size", "sm"); tag.textContent = axisLabel(d.axis);
+    li.appendChild(tag);
+    const body = el("div");
+    body.appendChild(el("b", null, d.name));
+    body.appendChild(el("span", null, d.opts[target - 1]));
+    li.appendChild(body);
+    list.appendChild(li);
+  });
+  reportHeight();
+}
+
+/* ============================================================
+   Value chart
+   ============================================================ */
+// Curve height in levels (0 = Manual, 3 = Governed autonomy) at value position u (0 to 1), and its inverse.
+const valueCurve = u => VALUE_START * Math.pow(3 / VALUE_START, u);
+const valueCurveInv = v => Math.log(v / VALUE_START) / Math.log(3 / VALUE_START);
+const VALUE_UMIN = 0.105;                  // Manual organizations sit at the start of the curve, just clear of the Manual label
+const zoneOf = u => Math.min(2, Math.floor(u * 3 + 1e-9));
+
+function valuePoint() {
+  if (Object.keys(answers).length !== 8) return null;
+  const A = mean(axisVals("A")), G = mean(axisVals("G"));
+  const x = Math.min(A, G), stage = stageOf(A, G), v = x - 1;   // a score of 1 is the Manual level, 4 the Governed autonomy level
+  const top = v >= 3;
+  const u = top ? 1 : (v > VALUE_START ? Math.max(VALUE_UMIN, valueCurveInv(v)) : VALUE_UMIN);
+  return { x, u, top, stage, A, G, zone: zoneOf(u) };
+}
+// The placement score at which the curve enters value zone k.
+const zoneStart = k => k === 0 ? 1 : valueCurve(k / 3) + 1;
+// The stages whose level the curve reaches inside value zone k.
+const stagesIn = k => STAGES.filter((n, i) => zoneOf(i === 0 ? 0 : valueCurveInv(i)) === k);
+
+function valueSentence(p) {
+  const zi = VALUE_ZONES.findIndex(z => z.id === valueFocus);
+  if (zi < 0) {
+    if (!p) return "Your position on the curve appears once every row is answered.";
+    const here = "Stage " + p.stage + ", " + STAGES[p.stage - 1] + ", puts you ";
+    if (p.top) return here + "at the top of the curve, at the Value north star.";
+    const z = VALUE_ZONES[p.zone], next = VALUE_ZONES[p.zone + 1];
+    return here + "in the " + z.name + " stretch of the curve (" + z.sub + "). " + (next ? next.name + " comes next." : "The Value north star is at the top.");
+  }
+  const z = VALUE_ZONES[zi], names = stagesIn(zi);
+  let s = z.name + " (" + z.sub + ") " + z.lead + " It is where the " + names.join(" and ") + (names.length > 1 ? " levels sit." : " level sits.");
+  if (!p) return s + " Answer every row to see where you stand.";
+  if (p.zone === zi) s += " Your dot is in it now.";
+  else if (p.zone > zi) s += " Your dot is already past it, in " + VALUE_ZONES[p.zone].name + ".";
+  else s += " It is still ahead of you. It starts at a placement score of about " + f1(zoneStart(zi)) + ", and yours is " + f1(p.x) + ". The rows to move are listed under What the next stage requires.";
+  if (zi === 0) s += " Your controls score of " + f1(p.G) + " of 4 shows how solid it is.";
+  return s;
+}
+let lastDotKey = "";
+function renderValueChart() {
+  const L = 60, R = 690, B = 306, BH = 66;
+  const X = u => L + u * (R - L), Y = v => B - v * BH;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]));
+  const zi = VALUE_ZONES.findIndex(z => z.id === valueFocus);
+  const BG = "#f4f4f4", TINT = "#dfe7f5";   // card background, and the same with the focus tint over it
+  const pathOver = (u0, u1) => { let d = ""; for (let i = 0; i <= 60; i++) { const u = u0 + (u1 - u0) * i / 60; d += (i ? " L" : "M") + X(u).toFixed(1) + " " + Y(valueCurve(u)).toFixed(1); } return d; };
+  let s = "";
+  // focus tint on the chosen value zone
+  VALUE_ZONES.forEach((z, k) => {
+    s += `<rect class="zone${k === zi ? " on" : ""}" x="${X(k / 3).toFixed(1)}" y="${Y(4)}" width="${(X((k + 1) / 3) - X(k / 3)).toFixed(1)}" height="${B - Y(4)}"/>`;
+  });
+  // area under the curve, with the chosen zone one step darker
+  const edge = pathOver(0, 1);
+  s += `<path class="area" d="${edge} L${X(1)} ${B} L${X(0)} ${B} Z"/>`;
+  if (zi >= 0) s += `<path class="zarea" d="${pathOver(zi / 3, (zi + 1) / 3)} L${X((zi + 1) / 3).toFixed(1)} ${B} L${X(zi / 3).toFixed(1)} ${B} Z"/>`;
+  // dotted lines: one across at each stage level, one up at each value zone edge
+  [1, 2, 3].forEach(v => { s += `<line class="dline" x1="${L}" y1="${Y(v)}" x2="${R}" y2="${Y(v)}"/>`; });
+  [1 / 3, 2 / 3].forEach(u => { s += `<line class="dline" x1="${X(u).toFixed(1)}" y1="${Y(4)}" x2="${X(u).toFixed(1)}" y2="${B}"/>`; });
+  s += `<path class="edge" d="${edge}"/>`;
+  // north star: the curve ends on the Governed autonomy level, a short stem runs into the circle
+  const end = [X(1), Y(3)], C = [X(1) + 6, Y(3) - 48], r = 26;
+  const dx = C[0] - end[0], dy = C[1] - end[1], len = Math.hypot(dx, dy);
+  // you today: guides first so labels sit on top of them
+  const p = valuePoint();
+  let px = 0, py = 0, fadeCls = "you-fade";
+  if (p) {
+    px = X(p.u); py = Y(valueCurve(p.u));
+    const dotKey = px.toFixed(1) + "," + py.toFixed(1);
+    fadeCls = "you-fade" + (dotKey !== lastDotKey ? " moved" : ""); lastDotKey = dotKey;
+    s += `<g class="${fadeCls}"><line class="guide" id="valueGuideH" x1="${L}" y1="${py.toFixed(1)}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}"/>`;
+    s += `<line class="guide" x1="${px.toFixed(1)}" y1="${py.toFixed(1)}" x2="${px.toFixed(1)}" y2="${B}"/></g>`;
+  } else lastDotKey = "";
+  // stage names, each sitting on its level line
+  STAGES.forEach((name, k) => {
+    s += `<text class="slabel${k ? " halo" : ""}" x="${L + 12}" y="${Y(k) - 8}" font-size="12" font-weight="600"${k ? ` stroke="${zi === 0 ? TINT : BG}"` : ""}>${esc(name)}</text>`;
+  });
+  // axes with arrowheads and titles
+  s += `<line class="axis" x1="${L}" y1="${B}" x2="${L}" y2="24"/><polygon class="arrow" points="${L - 4},26 ${L + 4},26 ${L},14"/>`;
+  s += `<line class="axis" x1="${L}" y1="${B}" x2="${R + 34}" y2="${B}"/><polygon class="arrow" points="${R + 32},${B - 4} ${R + 32},${B + 4} ${R + 44},${B}"/>`;
+  s += `<text x="${L + 12}" y="27" font-size="12" font-weight="600" fill="#161616">Maturity stage</text>`;
+  s += `<text x="${(L + R) / 2}" y="${B + 62}" text-anchor="middle" font-size="12" font-weight="600" fill="#161616">AI value</text>`;
+  // north star
+  s += `<line class="ns" x1="${end[0]}" y1="${end[1]}" x2="${(C[0] - dx / len * r).toFixed(1)}" y2="${(C[1] - dy / len * r).toFixed(1)}"/>`;
+  s += `<circle class="ns" cx="${C[0]}" cy="${C[1]}" r="${r}"/>`;
+  s += `<text x="${C[0]}" y="${C[1] + 4}" text-anchor="middle" font-size="12" font-weight="600" fill="#0f62fe">Value</text>`;
+  // value zone names under the axis
+  VALUE_ZONES.forEach((z, k) => {
+    const mid = X((k + .5) / 3).toFixed(1);
+    s += `<text class="zlabel${zi < 0 || k === zi ? "" : " dim"}" x="${mid}" y="${B + 22}" text-anchor="middle" font-size="12" font-weight="600">${esc(z.name)}</text>`;
+    s += `<text class="zsub" x="${mid}" y="${B + 37}" text-anchor="middle" font-size="10.5">${esc(z.sub)}</text>`;
+  });
+  // the dot and its label, above the curve where the plot is empty
+  if (p) {
+    const where = "Stage " + p.stage + ", " + STAGES[p.stage - 1];
+    s += `<g class="${fadeCls}"><circle class="seg you" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="8" tabindex="0" role="img" aria-label="${esc("You today: " + where)}" data-tip="${esc("You today|" + where + " (score " + f1(p.x) + " of 4)")}"/>`;
+    const mode = p.u >= .62 ? "end" : (px - 30 < L + 8 ? "start" : "middle");
+    const lx = mode === "end" ? px - (p.top ? 18 : 16) : mode === "start" ? L + 10 : px;
+    const ly = mode === "end" ? py - 8 : py - 16;
+    const lmid = mode === "end" ? lx - 30 : mode === "start" ? lx + 30 : lx;
+    const lzone = Math.min(2, Math.max(0, Math.floor((lmid - L) / (R - L) * 3)));
+    s += `<text class="halo" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${mode}" font-size="12" font-weight="600" fill="#161616" stroke="${lzone === zi ? TINT : BG}">You today</text></g>`;
+  }
+  const svg = $("valueSvg");
+  svg.querySelectorAll(":scope > *:not(title)").forEach(e => e.remove());
+  svg.insertAdjacentHTML("beforeend", s);
+  // If the level guide would run through a stage name, start it just after the name instead
+  const gh = $("valueGuideH");
+  if (gh) try { svg.querySelectorAll(".slabel").forEach(t => {
+    const b = t.getBBox();
+    if (py > b.y - 3 && py < b.y + b.height + 3) gh.setAttribute("x1", Math.min(px, b.x + b.width + 8).toFixed(1));
+  }); } catch (e) {}
+  $("valueRead").textContent = valueSentence(p);
+  renderDeepCards();
+}
+function bindValueFocus() {
+  const sw = $("valueFocus");
+  const apply = () => {
+    const sel = sw.querySelector("cds-content-switcher-item[selected]");
+    const v = (sel && sel.getAttribute("value")) || sw.getAttribute("value") || "all";
+    if (v !== valueFocus) { valueFocus = v; renderValueChart(); }
+  };
+  const CS = customElements.get("cds-content-switcher");
+  const evt = (CS && CS.eventSelect) || "cds-content-switcher-selected";
+  sw.addEventListener(evt, () => setTimeout(apply, 0));
+  sw.addEventListener("click", () => setTimeout(apply, 0));
+  sw.addEventListener("keyup", () => setTimeout(apply, 0));
+}
+function bindValueTooltip() {
+  const chart = $("valueChart"), tip = $("vtip");
+  const show = e => {
+    const r = e.target.closest ? e.target.closest(".seg") : null; if (!r) return;
+    const parts = (r.dataset.tip || "").split("|");
+    tip.innerHTML = "<b>" + parts[0] + "</b>" + (parts[1] || "");
+    const cb = chart.getBoundingClientRect(), rb = r.getBoundingClientRect();
+    tip.style.left = (rb.left - cb.left + rb.width / 2 + chart.scrollLeft) + "px";
+    tip.style.top = (rb.top - cb.top) + "px";
+    tip.classList.add("on");
+  };
+  const hide = () => tip.classList.remove("on");
+  chart.addEventListener("mouseover", show);
+  chart.addEventListener("mouseout", e => { if (e.target.closest && e.target.closest(".seg")) hide(); });
+  chart.addEventListener("focusin", show);
+  chart.addEventListener("focusout", hide);
+}
+
+/* ============================================================
+   Deep dives: three four-row assessments, one per value zone,
+   shown as in-file pages (index.html#security and so on)
+   ============================================================ */
+const VIEWS = ["overview"].concat(DEEP.map(m => m.id));
+let view = "overview", builtDeep = null, navFocus = false;
+const deepModel = id => DEEP.find(m => m.id === id) || null;
+const joinNames = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+
+function deepResult(m) {
+  // A deep dive places at the average of its rows, rounded.
+  const a = deepAnswers[m.id], vals = m.dims.map(d => a[d.id]).filter(Boolean);
+  const complete = vals.length === m.dims.length, score = vals.length ? mean(vals) : null;
+  return { n: vals.length, complete, score, stage: complete ? Math.max(1, Math.min(4, Math.round(score))) : null };
+}
+function deepMessage(m, r) {
+  const a = deepAnswers[m.id], low = m.dims.filter(d => a[d.id] < r.stage).map(d => d.name);
+  if (low.length) return { kind: "warning", title: joinNames(low) + (low.length > 1 ? " are" : " is") + " holding you back.", text: "Bring " + (low.length > 1 ? "them" : "it") + " up to Stage " + r.stage + " first." };
+  if (r.stage === 4) return { kind: "success", title: "You are at the last stage.", text: "Keep it measured and widen scope one area at a time." };
+  return { kind: "info", title: "No row is holding you back.", text: "Move the four rows up together, one stage at a time." };
+}
+function recommendedDeep() {
+  // Where to start: the area picked on the value curve, otherwise the weakest area in the overview.
+  const open = DEEP.filter(m => !deepResult(m).complete);
+  if (!open.length) return null;
+  if (valueFocus !== "all" && open.some(m => m.id === valueFocus)) return { id: valueFocus, why: "You picked this as what matters most." };
+  if (Object.keys(answers).length !== 8) return null;
+  const avg = m => mean(m.related.map(k => answers[k]));
+  const best = open.slice().sort((x, y) => avg(x) - avg(y))[0];
+  const strict = DEEP.filter(m => avg(m) <= avg(best)).length === 1;
+  return { id: best.id, why: strict ? "Your overview answers are lowest here." : "A good next step from your overview answers." };
+}
+
+function renderDeepCards() {
+  const box = $("deepCards"), rec = recommendedDeep();
+  box.innerHTML = "";
+  DEEP.forEach(m => {
+    const r = deepResult(m), isRec = !!rec && rec.id === m.id;
+    const a = el("a", "deep-card" + (isRec ? " rec" : "")); a.href = "#" + m.id;
+    const head = el("span", "dc-top");
+    head.appendChild(el("span", "dc-for", m.for));
+    if (isRec) { const tag = document.createElement("cds-tag"); tag.setAttribute("type", "blue"); tag.setAttribute("size", "sm"); tag.textContent = r.n ? "Continue" : "Start here"; head.appendChild(tag); }
+    a.appendChild(head);
+    a.appendChild(el("span", "dc-name", m.name));
+    a.appendChild(el("span", "dc-covers", m.dims.map((d, i) => i ? d.name.charAt(0).toLowerCase() + d.name.slice(1) : d.name).join(", ") + "."));
+    if (isRec) a.appendChild(el("span", "dc-why", rec.why));
+    const st = el("span", "status dc-status " + (r.complete ? "ok" : "none"));
+    st.innerHTML = (r.complete ? ICON.checkmarkFilled : ICON.circleDash) + "<span></span>";
+    st.lastChild.textContent = r.complete ? "Stage " + r.stage + ": " + STAGES[r.stage - 1] : r.n ? r.n + " of " + m.dims.length + " answered" : "Not started";
+    a.appendChild(st);
+    a.insertAdjacentHTML("beforeend", '<svg class="dc-arrow" viewBox="0 0 20 20" aria-hidden="true"><polygon points="11.8,2.8 10.8,3.8 16.2,9.3 1,9.3 1,10.7 16.2,10.7 10.8,16.2 11.8,17.2 19,10"/></svg>');
+    box.appendChild(a);
+  });
+  const fm = deepModel(valueFocus);
+  $("valueDeepLink").hidden = !fm;
+  if (fm) $("valueDeepLinkLabel").textContent = "Go deeper on " + fm.name.toLowerCase();
+}
+
+function buildDeep(m) {
+  if (builtDeep === m.id) return;
+  const box = $("dMatrix"); box.innerHTML = "";
+  const head = el("div", "mhead"); head.setAttribute("aria-hidden", "true");
+  head.appendChild(el("div", null, "Dimension"));
+  STAGES.forEach((name, i) => { const c = el("div"); c.appendChild(el("span", "stg", "Stage " + (i + 1))); c.appendChild(document.createTextNode(name)); head.appendChild(c); });
+  box.appendChild(head);
+  m.dims.forEach(d => {
+    const rid = "ddim-" + m.id + "-" + d.id;
+    const row = el("div", "row"); row.dataset.dim = d.id; row.setAttribute("role", "radiogroup"); row.setAttribute("aria-labelledby", rid);
+    const lab = el("div", "dim");
+    lab.appendChild(el("span", "cat", d.group));
+    const b = el("b", null, d.name); b.id = rid; lab.appendChild(b);
+    row.appendChild(lab);
+    d.opts.forEach((t, i) => {
+      const stage = i + 1;
+      const tile = el("label", "tile"); tile.dataset.dim = d.id; tile.dataset.stage = stage;
+      const inp = document.createElement("input"); inp.type = "radio"; inp.name = m.id + "-" + d.id; inp.value = stage;
+      inp.setAttribute("aria-label", "Stage " + stage + ", " + STAGES[i] + ". " + t);
+      inp.addEventListener("change", () => { deepAnswers[m.id][d.id] = stage; saveDeep(); renderDeep(); afterAnswer($("dMatrix"), id => !!deepAnswers[m.id][id], $("dMatrixFoot")); });
+      tile.appendChild(inp);
+      tile.appendChild(el("span", "stage-mark", "Stage " + stage + ", " + STAGES[i]));
+      tile.appendChild(el("span", "txt", t));
+      tile.insertAdjacentHTML("beforeend", ICON.checkmarkFilled.replace("<svg ", '<svg class="check" '));
+      row.appendChild(tile);
+    });
+    box.appendChild(row);
+  });
+  builtDeep = m.id;
+}
+
+function renderDeep() {
+  const m = deepModel(view); if (!m) return;
+  const a = deepAnswers[m.id], r = deepResult(m), total = m.dims.length;
+  const box = $("dMatrix");
+  box.querySelectorAll(".tile").forEach(t => {
+    const on = a[t.dataset.dim] == t.dataset.stage;
+    t.classList.toggle("on", on);
+    const inp = t.querySelector("input"); if (inp.checked !== on) inp.checked = on;
+  });
+  box.querySelectorAll(".row[data-dim]").forEach(row => row.classList.toggle("answered", !!a[row.dataset.dim]));
+
+  $("dFor").textContent = m.for + ".";
+  $("h-dresults").textContent = "Your " + m.name.toLowerCase() + " placement";
+  const pt = $("dProgressTop");
+  pt.setAttribute("value", r.n); pt.setAttribute("label", r.n + " of " + total + " answered"); pt.setAttribute("status", r.complete ? "finished" : "active");
+  $("dHint").hidden = r.complete; $("dToResults").hidden = !r.complete;
+  const pb = $("dProgress");
+  pb.setAttribute("value", r.n); pb.setAttribute("helper-text", r.n + " of " + total + " answered"); pb.setAttribute("status", r.complete ? "finished" : "active");
+
+  // placement
+  const note = $("dNote");
+  if (!r.complete) {
+    $("dStageLine").textContent = r.n ? "Provisional" : "Not yet placed";
+    $("dProvisional").textContent = r.n ? (total - r.n) + (total - r.n === 1 ? " row" : " rows") + " left." : "Answer all four rows to get a placement.";
+    $("dProvisional").hidden = false; note.hidden = true;
+  } else {
+    const stageHtml = "Stage " + r.stage + ": <b>" + STAGES[r.stage - 1] + "</b>";
+    if ($("dStageLine").innerHTML !== stageHtml) { $("dStageLine").innerHTML = stageHtml; replay($("dPlacement"), "soft-in"); }
+    $("dProvisional").hidden = true;
+    const msg = deepMessage(m, r);
+    note.setAttribute("kind", msg.kind); note.setAttribute("title", msg.title); note.setAttribute("subtitle", msg.text); note.hidden = false;
+  }
+
+  // this deep dive next to the overview placement
+  $("dScoreLabel").textContent = m.name + " score";
+  $("dScore").innerHTML = r.score === null ? "Pending" : f1(r.score) + " <small>of 4</small>";
+  const oDone = Object.keys(answers).length === 8, oStage = oDone ? stageOf(mean(axisVals("A")), mean(axisVals("G"))) : null;
+  $("dOverview").textContent = oDone ? "Stage " + oStage : "Pending";
+  $("dOverviewSub").textContent = oDone ? STAGES[oStage - 1] + ", from the eight-row overview" : "Answer the overview to compare";
+
+  // supporting stat
+  $("dCallout").hidden = !m.callout;
+  if (m.callout) { $("dCalloutText").innerHTML = m.callout.html; $("dCalloutSrc").textContent = m.callout.src; }
+
+  // bars
+  const bars = $("dBars"); bars.innerHTML = "";
+  m.dims.forEach(d => {
+    const v = a[d.id] || 0;
+    const bar = el("div", "bar");
+    bar.appendChild(el("span", "lab", d.name));
+    const track = el("span", "track");
+    track.setAttribute("role", "img");
+    track.setAttribute("aria-label", d.name + ": " + (v ? "stage " + v + ", " + STAGES[v - 1] : "not answered"));
+    for (let i = 1; i <= 4; i++) track.appendChild(el("i", i <= v ? "d" : ""));
+    bar.appendChild(track);
+    bar.appendChild(el("span", "val", v ? "Stage " + v : "Not answered"));
+    bars.appendChild(bar);
+  });
+
+  // next stage
+  const list = $("dNextList"); list.innerHTML = "";
+  if (!r.complete) {
+    $("dNextTitle").textContent = "What the next stage requires";
+    $("dNextIntro").textContent = "Shown once every row is answered.";
+  } else if (r.stage === 4) {
+    $("dNextTitle").textContent = "You are at the last stage";
+    $("dNextIntro").textContent = "The work now is keeping it measured and widening scope one area at a time.";
+  } else {
+    const target = r.stage + 1, below = m.dims.filter(d => a[d.id] < target);
+    $("dNextTitle").textContent = "What " + STAGES[target - 1] + " requires";
+    $("dNextIntro").textContent = "Rows still below stage " + target + ", with the statement to aim for.";
+    below.forEach(d => {
+      const li = el("li", "d");
+      const tag = document.createElement("cds-tag"); tag.setAttribute("type", "gray"); tag.setAttribute("size", "sm"); tag.textContent = d.group;
+      li.appendChild(tag);
+      const body = el("div");
+      body.appendChild(el("b", null, d.name));
+      body.appendChild(el("span", null, d.opts[target - 1]));
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+  }
+
+  const nxt = DEEP[DEEP.indexOf(m) + 1];
+  $("dNext").hidden = !nxt;
+  if (nxt) $("dNextLabel").textContent = "Next: " + nxt.name;
+  reportHeight();
+}
+
+/* ---------- which page is showing ---------- */
+function routeFromHash() { const h = (location.hash || "").slice(1); return VIEWS.includes(h) ? h : "overview"; }
+function goTo(v) { if (routeFromHash() === v) showView(v, true); else location.hash = v; }
+function showView(v, scroll) {
+  view = v;
+  const m = deepModel(v);
+  $("viewOverview").hidden = !!m;
+  $("viewDeep").hidden = !m;
+  $("crumbs").textContent = "IBM / Autonomous operations / Self-assessment" + (m ? " / " + m.name : "");
+  $("heroEyebrow").textContent = m ? m.model : "Agent-ready maturity model";
+  $("heroTitle").textContent = m ? m.title : "Where does your organization stand today?";
+  $("footScore").innerHTML = "<b>How it scores.</b> Each answer is a stage from 1 to 4. " + (m
+    ? "Your " + m.name.toLowerCase() + " placement is the average of the four rows, rounded."
+    : "Autonomy averages the first four rows, controls the last four. Your placement is the lower of the two, rounded.");
+  document.title = (m ? m.name + " | " : "") + "IBM Autonomous Operations Self-Assessment";
+  const tabs = $("viewTabs");
+  tabs.setAttribute("value", v);
+  try { tabs.value = v; } catch (e) {}
+  if (m) { $("viewDeep").setAttribute("aria-labelledby", "tab-" + m.id); buildDeep(m); renderDeep(); }
+  else render();
+  const moveFocus = navFocus; navFocus = false;
+  if (scroll) {
+    window.scrollTo(0, 0);
+    if (byPointer()) { replay(m ? $("viewDeep") : $("viewOverview"), "view-enter"); replay($("heroCopy"), "soft-in"); }
+    // Arriving from a card or a button, put focus on the new page's heading. Tabs keep their own focus.
+    if (moveFocus) { const h = document.body.classList.contains("embed") ? $(m ? "h-dmatrix" : "h-matrix") : $("heroTitle"); try { h.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  reportHeight();
+}
+function bindViews() {
+  const tabs = $("viewTabs");
+  const fromTab = e => {
+    const t = e.target && e.target.closest ? e.target.closest("cds-tab") : null;
+    const v = (e.detail && e.detail.item && e.detail.item.getAttribute("value")) || (t && t.getAttribute("value"));
+    if (v && VIEWS.includes(v) && v !== view) { navFocus = false; goTo(v); }
+  };
+  tabs.addEventListener("cds-tabs-selected", fromTab);
+  tabs.addEventListener("click", e => setTimeout(() => fromTab(e), 0));
+  window.addEventListener("hashchange", () => showView(routeFromHash(), true));
+  $("valueDeepLink").addEventListener("click", () => { if (deepModel(valueFocus)) { navFocus = true; goTo(valueFocus); } });
+  $("deepCards").addEventListener("click", e => { if (e.target.closest && e.target.closest(".deep-card")) navFocus = true; });
+  $("dToResults").addEventListener("click", () => { $("dResults").scrollIntoView({ behavior: scrollMode(), block: "start" }); });
+  $("dBack").addEventListener("click", () => { navFocus = true; goTo("overview"); });
+  $("dNext").addEventListener("click", () => { const n = DEEP[DEEP.indexOf(deepModel(view)) + 1]; if (n) { navFocus = true; goTo(n.id); } });
+  $("dCopy").addEventListener("click", copySummary);
+  $("dReset").addEventListener("click", () => { const m = deepModel(view); if (!m) return; deepAnswers[m.id] = {}; saveDeep(); renderDeep(); toast("Answers cleared."); });
+}
+
+/* ============================================================
+   Summary text, print report, actions
+   ============================================================ */
+function summaryText() {
+  const n = Object.keys(answers).length;
+  const A = mean(axisVals("A")), G = mean(axisVals("G"));
+  const lines = ["IBM Autonomous Operations Self-Assessment", "Answered: " + n + " of 8"];
+  if (n === 8) {
+    const st = stageOf(A, G);
+    const m = placementMessage(A, G);
+    lines.push("Placement: Stage " + st + ", " + STAGES[st - 1]);
+    lines.push(m.title + " " + m.text);
+  }
+  lines.push("Autonomy: " + (A === null ? "pending" : f1(A) + " of 4"));
+  lines.push("Controls: " + (G === null ? "pending" : f1(G) + " of 4"));
+  const vp = valuePoint();
+  if (vp) lines.push("Value curve: Stage " + vp.stage + ", " + STAGES[vp.stage - 1] + (vp.top ? ", at the top of the curve." : ", in the " + VALUE_ZONES[vp.zone].name + " stretch."));
+  lines.push("");
+  DIMS.forEach(d => lines.push(d.name + ": " + (answers[d.id] ? "stage " + answers[d.id] + ", " + STAGES[answers[d.id] - 1] + ". " + d.opts[answers[d.id] - 1] : "not answered")));
+  DEEP.forEach(m => {
+    const r = deepResult(m); if (!r.n) return;
+    lines.push("", m.name + " deep dive: " + (r.complete ? "Stage " + r.stage + ", " + STAGES[r.stage - 1] + " (" + f1(r.score) + " of 4)" : r.n + " of " + m.dims.length + " answered"));
+    m.dims.forEach(d => { const v = deepAnswers[m.id][d.id]; lines.push(d.name + ": " + (v ? "stage " + v + ", " + STAGES[v - 1] + ". " + d.opts[v - 1] : "not answered")); });
+  });
+  return lines.join("\n");
+}
+
+function buildPrintReport() {
+  const n = Object.keys(answers).length;
+  const A = mean(axisVals("A")), G = mean(axisVals("G"));
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const vsp = valuePoint();
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  let placement = "Provisional", msg = "Not every row has been answered yet, so this placement is provisional.";
+  if (n === 8) { const st = stageOf(A, G); const m = placementMessage(A, G); placement = "Stage " + st + ", " + STAGES[st - 1]; msg = m.title + " " + m.text; }
+  const rows = DIMS.map(d => {
+    const v = answers[d.id];
+    return "<tr><td>" + esc(d.name) + "</td><td>" + (v ? "Stage " + v + ", " + STAGES[v - 1] : "Not answered") + "</td><td>" + (v ? esc(d.opts[v - 1]) : "") + "</td></tr>";
+  }).join("");
+  const found = FOUND.map(f => {
+    const v = answers[f.dim];
+    const s = !v ? "Not answered" : v >= 3 ? "In place" : v === 2 ? "Partial" : "Missing";
+    return "<tr><td>" + esc(f.name) + "</td><td>" + s + "</td><td>" + esc(f.sub) + "</td></tr>";
+  }).join("");
+  let next = "";
+  if (n === 8) {
+    const st = stageOf(A, G);
+    if (st < 4) {
+      const target = st + 1;
+      const items = DIMS.filter(d => answers[d.id] < target).map(d => "<tr><td>" + esc(d.name) + "</td><td>" + axisLabel(d.axis) + "</td><td>" + esc(d.opts[target - 1]) + "</td></tr>").join("");
+      next = "<h2>What " + STAGES[target - 1] + " requires</h2><table class=\"pr-table\"><tr><th>Dimension</th><th>Axis</th><th>Statement to reach</th></tr>" + items + "</table>";
+    } else {
+      next = "<h2>Next</h2><p>At the last stage. The work now is keeping trust measured and widening scope one area at a time.</p>";
+    }
+  }
+  const deep = DEEP.map(m => {
+    const r = deepResult(m); if (!r.n) return "";
+    const head = m.name + " deep dive: " + (r.complete ? "Stage " + r.stage + ", " + STAGES[r.stage - 1] + " (" + f1(r.score) + " of 4)" : r.n + " of " + m.dims.length + " answered");
+    const trs = m.dims.map(d => { const v = deepAnswers[m.id][d.id]; return "<tr><td>" + esc(d.name) + "</td><td>" + (v ? "Stage " + v + ", " + STAGES[v - 1] : "Not answered") + "</td><td>" + (v ? esc(d.opts[v - 1]) : "") + "</td></tr>"; }).join("");
+    return "<h2>" + esc(head) + "</h2><table class=\"pr-table\"><tr><th>Row</th><th>Stage</th><th>Statement chosen</th></tr>" + trs + "</table>";
+  }).join("");
+  $("printReport").innerHTML =
+    "<div class=\"pr-top\"><span class=\"brand\">IBM Autonomous operations</span><span class=\"date\">Generated " + today + "</span></div>" +
+    "<h1>Self-assessment summary</h1>" +
+    "<p class=\"sub\">Agent-ready maturity model. Eight dimensions, four stages, placed by the client.</p>" +
+    "<div class=\"pr-kpis\">" +
+      "<div class=\"pr-kpi\"><div class=\"k\">Placement</div><div class=\"v\">" + placement + "</div></div>" +
+      "<div class=\"pr-kpi\"><div class=\"k\">Autonomy</div><div class=\"v\">" + (A === null ? "Pending" : f1(A) + " of 4") + "</div></div>" +
+      "<div class=\"pr-kpi\"><div class=\"k\">Controls</div><div class=\"v\">" + (G === null ? "Pending" : f1(G) + " of 4") + "</div></div>" +
+      "<div class=\"pr-kpi\"><div class=\"k\">Rows answered</div><div class=\"v\">" + n + " of 8</div></div>" +
+      "<div class=\"pr-kpi\"><div class=\"k\">Value curve</div><div class=\"v\">" + (vsp ? (vsp.top ? "Top of the curve" : VALUE_ZONES[vsp.zone].name) : "Pending") + "</div></div>" +
+    "</div>" +
+    "<div class=\"pr-msg\">" + esc(msg) + "</div>" +
+    "<h2>Answers</h2><table class=\"pr-table\"><tr><th>Dimension</th><th>Stage</th><th>Statement chosen</th></tr>" + rows + "</table>" +
+    "<h2>Foundations</h2><table class=\"pr-table\"><tr><th>Foundation</th><th>Status</th><th>What it covers</th></tr>" + found + "</table>" +
+    next +
+    deep +
+    "<div class=\"pr-foot\">Autonomy averages who decides, who does the work, what you see and what you optimize. Controls averages agent access, limits, how you check and how you measure trust. The placement is the lower of the two, rounded. This is a self-assessment and reflects the client's own read of their environment.</div>";
+}
+
+function toast(m) {
+  ["toast", "dToast"].forEach(id => {
+    const t = $(id); clearTimeout(t._h); clearTimeout(t._c);
+    t.textContent = m; t.classList.add("show");
+    t._h = setTimeout(() => { t.classList.remove("show"); t._c = setTimeout(() => { t.textContent = ""; }, 200); }, 3000);
+  });
+}
+
+async function copySummary() {
+  const text = summaryText();
+  try { await navigator.clipboard.writeText(text); toast("Summary copied."); return; } catch (e) {}
+  try {
+    const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); const ok = document.execCommand("copy"); ta.remove();
+    toast(ok ? "Summary copied." : "Copy was blocked by the browser. Use print or save as PDF instead.");
+  } catch (e) { toast("Copy was blocked by the browser. Use print or save as PDF instead."); }
+}
+
+function bind() {
+  $("toResults").addEventListener("click", () => { $("results").scrollIntoView({ behavior: scrollMode(), block: "start" }); });
+  $("skipLink").addEventListener("click", e => { e.preventDefault(); const main = $("main"); main.focus({ preventScroll: true }); main.scrollIntoView({ block: "start" }); });
+  bindValueTooltip();
+  bindValueFocus();
+  bindViews();
+  $("copyBtn").addEventListener("click", copySummary);
+  $("printBtn").addEventListener("click", () => { buildPrintReport(); window.print(); });
+  $("resetBtn").addEventListener("click", () => { answers = {}; save(); render(); toast("Answers cleared."); });
+  window.addEventListener("beforeprint", buildPrintReport);
+}
+
+/* ============================================================
+   Embed height reporting
+   ============================================================ */
+const inFrame = (() => { try { return window.parent !== window; } catch (e) { return true; } })();
+function reportHeight() {
+  if (!inFrame) return;
+  try { parent.postMessage({ aopsAssessmentHeight: document.body.scrollHeight }, "*"); } catch (e) {}
+}
+window.addEventListener("resize", reportHeight);
+
+/* ============================================================
+   Init
+   ============================================================ */
+function init() {
+  if (new URLSearchParams(location.search).get("embed") === "1") document.body.classList.add("embed");
+  buildMatrix();
+  bind();
+  showView(routeFromHash(), false);
+  // When embedded, tell the host page the height whenever it changes, with no polling
+  if (inFrame) { if (window.ResizeObserver) new ResizeObserver(reportHeight).observe(document.body); else setInterval(reportHeight, 1000); }
+}
+if (document.readyState !== "loading") init(); else document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
